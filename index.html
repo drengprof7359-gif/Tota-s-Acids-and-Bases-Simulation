@@ -1,0 +1,2571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المختبر التفاعلي: أسرار بين الأيونات والتحديات الكيميائية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Amiri:wght@700&family=Tajawal:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        serifLabel: ['Amiri', 'serif'],
+                        phFont: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        emeraldPrimary: '#059669',
+                        emeraldHover: '#047857',
+                        pastelAcid: '#FECACA',
+                        pastelNeutral: '#FEF08A',
+                        pastelBase: '#BFDBFE',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .formula {
+            font-family: 'Times New Roman', Times, serif;
+            direction: ltr;
+            display: inline-block;
+        }
+
+        .ph-number {
+            font-family: 'Tajawal', sans-serif;
+            color: #78350F;
+            font-weight: 900;
+        }
+
+        .panel-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #E2E8F0;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        .game-card {
+            transition: all 0.25s ease-in-out;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+        }
+
+        .interactive-probe {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+            will-change: transform, left, top;
+        }
+        .interactive-probe:hover {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+        }
+        .interactive-probe:active, .interactive-probe.dragging {
+            cursor: grabbing !important;
+            z-index: 100 !important;
+            filter: drop-shadow(0 12px 20px rgba(0,0,0,0.25)) scale(1.04);
+        }
+
+        /* STANDARDIZED LABORATORY TOOL STAGING CONTAINERS */
+        .tool-staging-container {
+            width: 100%;
+            height: 125px;
+            background-color: #FFFFFF;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 1rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            position: relative;
+            transition: all 0.2s ease-in-out;
+        }
+        .tool-staging-container:hover {
+            border-color: #0EA5E9;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.12);
+        }
+
+        .beaker-container {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            height: 260px;
+            border-bottom: 5px solid #CBD5E1;
+            border-left: 5px solid #CBD5E1;
+            border-right: 5px solid #CBD5E1;
+            border-radius: 0 0 2.25rem 2.25rem;
+            background: rgba(241, 245, 249, 0.5);
+            overflow: hidden;
+            margin: 0 auto;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        /* Mobile specific adjustments for beaker height to avoid overflow */
+        @media (max-width: 640px) {
+            .beaker-container {
+                max-width: 220px;
+                height: 210px;
+            }
+            .tool-staging-container {
+                height: 105px;
+                padding: 0.25rem;
+            }
+        }
+
+        .beaker-container.drag-over {
+            border-color: #2563EB;
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.4);
+            background-color: rgba(224, 242, 254, 0.7);
+        }
+
+        /* POURING ANIMATION EFFECT */
+        @keyframes pourStream {
+            0% { height: 0%; opacity: 0.9; }
+            50% { height: 85%; opacity: 1; }
+            100% { height: 0%; opacity: 0; }
+        }
+        .pour-stream-active {
+            animation: pourStream 1.2s ease-in-out forwards;
+        }
+
+        input[type=range] {
+            accent-color: #2563EB;
+        }
+
+        @keyframes bulbGlowStrong {
+            0%, 100% { filter: drop-shadow(0 0 8px #F59E0B) drop-shadow(0 0 20px #FBBF24); }
+            50% { filter: drop-shadow(0 0 22px #FBBF24) drop-shadow(0 0 35px #F59E0B); }
+        }
+        @keyframes bulbGlowWeak {
+            0%, 100% { filter: drop-shadow(0 0 2px #F59E0B); }
+            50% { filter: drop-shadow(0 0 6px #FBBF24); }
+        }
+        .bulb-lit-strong {
+            animation: bulbGlowStrong 1.2s infinite ease-in-out;
+            background-color: #FBBF24 !important;
+            color: #78350F !important;
+        }
+        .bulb-lit-weak {
+            animation: bulbGlowWeak 1.8s infinite ease-in-out;
+            background-color: #FCD34D !important;
+            color: #92400E !important;
+            opacity: 0.85;
+        }
+
+        .certificate-border {
+            border: 8px double #D97706;
+            background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
+        }
+        
+        @keyframes celebratePop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: celebratePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #certificatePrintArea, #certificatePrintArea * {
+                visibility: visible;
+            }
+            #certificatePrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 py-2.5 min-h-[4rem]">
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 text-white flex items-center justify-center font-black text-lg sm:text-xl shadow-md shrink-0">
+                            <i class="fa-solid fa-atom"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xs sm:text-base font-extrabold text-slate-800 leading-tight">المختبر التفاعلي: أسرار الأيونات</h1>
+                            <p class="text-[9px] sm:text-[11px] text-slate-500 font-semibold">محاكاة تفاعلية شاملة وتحديات كيميائية</p>
+                        </div>
+                    </div>
+                    <button onclick="resetCurrentLab()" class="sm:hidden bg-pink-100 hover:bg-pink-200 text-pink-800 px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border border-pink-200 shrink-0">
+                        <i class="fa-solid fa-rotate-right text-[10px]"></i> اعادة
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                    <nav class="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full no-scrollbar">
+                        <button onclick="switchTab('lab')" id="tab-btn-lab" class="tab-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 bg-sky-100 text-slate-900 shadow-sm shrink-0">
+                            <i class="fa-solid fa-flask text-sky-600"></i> المختبر الرئيسي
+                        </button>
+                        <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-100 text-slate-600 shrink-0">
+                            <i class="fa-solid fa-clipboard-question text-emerald-600"></i> قيّم نفسك
+                        </button>
+                        <button onclick="switchTab('challenges')" id="tab-btn-challenges" class="tab-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-100 text-slate-600 shrink-0">
+                            <i class="fa-solid fa-gamepad text-amber-500"></i> جرّب واكتشف!
+                        </button>
+                    </nav>
+
+                    <button onclick="resetCurrentLab()" class="hidden sm:flex bg-pink-100 hover:bg-pink-200 text-pink-800 px-3 py-1.5 rounded-xl text-xs font-bold transition items-center gap-1.5 border border-pink-200 shrink-0">
+                        <i class="fa-solid fa-rotate-right"></i> إعادة ضبط
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 py-3 sm:py-5 flex-grow w-full space-y-4 sm:space-y-5">
+
+        <!-- TAB 1: VIRTUAL LAB -->
+        <div id="tab-lab" class="tab-content space-y-4 sm:space-y-5">
+
+            <!-- EXPERIMENT MODE SELECTION BANNER -->
+            <div class="panel-card p-3.5 sm:p-4 border-t-4 border-t-blue-600 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <h2 class="text-xs sm:text-base font-black text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-blue-600 text-sm sm:text-base"></i>
+                        <span>اختر نمط التجربة المطلوب:</span>
+                    </h2>
+                    <span id="activeModeBadge" class="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-100 text-emerald-800 self-start sm:self-auto">نمط مادة كيميائية جاهزة</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+                    <button onclick="setExperimentMode('substance')" id="modeBtnSubstance" class="p-3 sm:p-3.5 rounded-2xl border text-right transition flex items-start gap-2.5 sm:gap-3 bg-emerald-50 border-emerald-500 shadow-sm">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0 mt-0.5">
+                            <i class="fa-solid fa-vial"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800">تجربة مادة كيميائية جاهزة</div>
+                            <p class="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 leading-snug">اختر مادة من الأحماض أو القواعد وفحص خصائصها الكيميائية والتوصيل ورقم pH باستخدام الأدوات.</p>
+                        </div>
+                    </button>
+                    <button onclick="setExperimentMode('ions')" id="modeBtnIons" class="p-3 sm:p-3.5 rounded-2xl border text-right transition flex items-start gap-2.5 sm:gap-3 bg-white border-slate-200 hover:border-slate-300">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0 mt-0.5">
+                            <i class="fa-solid fa-atom"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800">التحكم في تركيز الأيونات</div>
+                            <p class="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 leading-snug">تحكم مباشرة بتراكيز [H⁺] و [OH⁻] لملاحظة تأثيرها التلقائي الدقيق على pH و pOH وعلاقة التأين.</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN WORKSPACE GRID: CONCENTRATION CONTROLS / SUBSTANCE SELECTOR NEXT TO BEAKER SIMULATION -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-start">
+                
+                <!-- LEFT ADJACENT AREA: MODE CONTROLS & CALCULATED ION READOUTS -->
+                <div class="lg:col-span-6 space-y-4 w-full min-w-0">
+                    <!-- MODE A CONTROLS CONTAINER -->
+                    <div id="substanceModeControls" class="panel-card p-3.5 sm:p-5 border-t-4 border-t-emerald-600 space-y-3.5 sm:space-y-4">
+                        <div class="flex flex-wrap justify-between items-center gap-2">
+                            <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-flask text-emerald-600 text-sm sm:text-base"></i>
+                                <span>1. اختيار المادة وإعداد التجربة</span>
+                            </h2>
+                            <span id="substanceCategoryBadge" class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">أحماض قوية</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                            <div>
+                                <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">فئة المادة:</label>
+                                <select id="strengthTypeSelect" onchange="onTypeCategoryChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-[11px] sm:text-xs font-bold text-slate-800 focus:bg-white focus:outline-none">
+                                    <option value="acid_strong">أحماض قوية</option>
+                                    <option value="acid_weak">أحماض ضعيفة</option>
+                                    <option value="base_strong">قواعد قوية</option>
+                                    <option value="base_weak">قواعد ضعيفة</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">المادة الكيميائية:</label>
+                                <select id="substanceListSelect" onchange="onSubstanceSelectChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-[11px] sm:text-xs font-bold text-slate-800 focus:bg-white focus:outline-none"></select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-1">
+                            <div>
+                                <div class="flex justify-between text-[11px] sm:text-xs font-bold mb-1">
+                                    <span class="text-slate-600">التركيز الابتدائي (C):</span>
+                                    <span class="text-blue-600 font-mono" id="dispConcVal">M 0.100</span>
+                                </div>
+                                <input type="range" id="concSlider" min="0.001" max="1.0" step="0.001" value="0.100" oninput="onSliderInputChange()" class="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[11px] sm:text-xs font-bold mb-1">
+                                    <span class="text-slate-600">حجم المحلول (V):</span>
+                                    <span class="text-blue-600 font-mono" id="dispVolVal">mL 500</span>
+                                </div>
+                                <input type="range" id="volSlider" min="100" max="1000" step="50" value="500" oninput="onSliderInputChange()" class="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-1">
+                            <button id="btnPourSubstance" onclick="pourSubstanceToBeaker()" class="w-full bg-emeraldPrimary hover:bg-emeraldHover text-white font-extrabold py-2.5 sm:py-3 px-4 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-play text-xs sm:text-sm"></i> إضافة المادة وبدء التفاعل تلقائياً
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MODE B CONTROLS CONTAINER -->
+                    <div id="ionsModeControls" class="panel-card p-3.5 sm:p-5 border-t-4 border-t-indigo-600 space-y-3.5 sm:space-y-4 hidden">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 gap-1 flex-wrap">
+                            <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-indigo-600 text-sm sm:text-base"></i>
+                                <span>التحكم المباشر في تركيز الأيونات [H⁺] و [OH⁻] عند 25°C</span>
+                            </h2>
+                            <span class="text-[9px] sm:text-[10px] bg-indigo-100 text-indigo-800 font-extrabold px-2 py-0.5 rounded-full">Kw = 1.0 × 10⁻¹⁴</span>
+                        </div>
+
+                        <p class="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-semibold">
+                            غيّر تركيز أحد الأيونات إما بإدخال القيمة أو تحريك شريط التحكم. سيتم حساب التركيز المقابل تلقائياً للحفاظ على الاتزان المائي عند 25°C:
+                        </p>
+
+                        <div class="grid grid-cols-1 gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-3.5 rounded-2xl border border-slate-200">
+                            <!-- H+ Control -->
+                            <div class="space-y-1.5 sm:space-y-2">
+                                <label class="block text-[11px] sm:text-xs font-bold text-rose-700">تركيز أيون الهيدروجين [H⁺] (mol/L):</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="ionInputH" step="1e-14" min="1e-14" max="1" value="1e-7" onchange="onIonInputChange('H')" class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-[11px] sm:text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-rose-500">
+                                </div>
+                                <input type="range" id="ionSliderH" min="0" max="14" step="0.1" value="7" oninput="onIonSliderChange('H')" class="w-full h-1.5 bg-rose-200 rounded-lg cursor-pointer">
+                                <div class="text-[10px] sm:text-[11px] font-mono text-rose-800 font-bold flex justify-between">
+                                    <span>القيمة الحالية:</span>
+                                    <span id="ionDispTextH">1.00 × 10⁻⁷ mol/L</span>
+                                </div>
+                            </div>
+
+                            <!-- OH- Control -->
+                            <div class="space-y-1.5 sm:space-y-2">
+                                <label class="block text-[11px] sm:text-xs font-bold text-blue-700">تركيز أيون الهيدروكسيد [OH⁻] (mol/L):</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="ionInputOH" step="1e-14" min="1e-14" max="1" value="1e-7" onchange="onIonInputChange('OH')" class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-[11px] sm:text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <input type="range" id="ionSliderOH" min="0" max="14" step="0.1" value="7" oninput="onIonSliderChange('OH')" class="w-full h-1.5 bg-blue-200 rounded-lg cursor-pointer">
+                                <div class="text-[10px] sm:text-[11px] font-mono text-blue-800 font-bold flex justify-between">
+                                    <span>القيمة الحالية:</span>
+                                    <span id="ionDispTextOH">1.00 × 10⁻⁷ mol/L</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ionModeExplanationBox" class="bg-indigo-50 border border-indigo-200 rounded-xl p-2.5 sm:p-3 text-[11px] sm:text-xs text-indigo-950 font-bold leading-relaxed">
+                            توضيح علمي: زيادة تركيز أيونات [H⁺] تعني انخفاض تركيز [OH⁻] تلقائياً لنفس المحلول، مما ينقل المحلول للحالة الحمضية (pH &lt; 7).
+                        </div>
+                    </div>
+
+                    <!-- CHEMICAL MEASUREMENT RESULTS & ION DISPLAY BOX -->
+                    <div class="panel-card p-3.5 sm:p-4 space-y-3 border-t-4 border-t-blue-400">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-extrabold text-slate-800">نتائج القياس الكيميائي والأيونات</h3>
+                            <span id="solutionNatureBadge" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200">ماء مقطر</span>
+                        </div>
+
+                        <!-- pH & pOH Grid -->
+                        <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+                            <div class="bg-slate-50/80 p-2.5 sm:p-3 rounded-xl border border-slate-200 text-center shadow-2xs">
+                                <div class="text-[10px] sm:text-[11px] text-slate-500 font-bold mb-0.5">الرقم الهيدروجيني pH</div>
+                                <div id="phValueDisplay" class="text-lg sm:text-xl ph-number">--</div>
+                            </div>
+                            <div class="bg-slate-50/80 p-2.5 sm:p-3 rounded-xl border border-slate-200 text-center shadow-2xs">
+                                <div class="text-[10px] sm:text-[11px] text-slate-500 font-bold mb-0.5">الرقم الهيدروكسيدي pOH</div>
+                                <div id="pohValueDisplay" class="text-lg sm:text-xl ph-number">--</div>
+                            </div>
+                        </div>
+
+                        <!-- Ions & Degree of Ionization -->
+                        <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200 text-xs font-mono space-y-1.5 text-slate-800">
+                            <div class="flex justify-between items-center text-[11px] sm:text-xs">
+                                <span class="font-bold text-slate-600">:[H⁺]</span>
+                                <span id="h3oConcVal" class="font-bold text-slate-900">1.00 × 10⁻⁷ mol/L</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] sm:text-xs">
+                                <span class="font-bold text-slate-600">:[OH⁻]</span>
+                                <span id="ohConcVal" class="font-bold text-slate-900">1.00 × 10⁻⁷ mol/L</span>
+                            </div>
+                            <div id="ionizationRow" class="flex justify-between items-center border-t border-slate-200 pt-1.5 text-[10px] sm:text-[11px]">
+                                <span class="font-sans font-bold text-slate-700">نسبة التأين الكلي / الجزئي:</span>
+                                <span id="ionizationAlphaVal" class="font-extrabold text-purple-700">100.00%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPOSITIONED: IONIZATION AND DISSOCIATION EQUATION SECTION -->
+                    <div id="substanceEquationBox" class="panel-card p-3.5 sm:p-4 border-t-4 border-t-purple-500 space-y-2">
+                        <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-atom text-purple-600"></i> معادلة التأين والتفكك للمادة المحددة
+                        </h3>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 text-center min-h-[46px] sm:min-h-[50px] flex items-center justify-center">
+                            <p id="equationDisplay" class="formula text-xs sm:text-base font-bold text-slate-700 break-all sm:break-normal">
+                                "اختر المادة ثم اضغط على 'إضافة المادة وبدء التفاعل تلقائياً'"
+                            </p>
+                        </div>
+                        <p id="equationExplanation" class="text-[10px] sm:text-[11px] text-slate-500 text-center">لم يتم إضافة أي مادة بعد.</p>
+                    </div>
+                </div>
+
+                <!-- RIGHT MAIN AREA: BEAKER SIMULATION WITH DRAGGABLE LAB TOOLS -->
+                <div class="lg:col-span-6 space-y-4 w-full min-w-0">
+                    <!-- BEAKER CANVAS & INTERACTIVE DRAGGABLE TOOLS -->
+                    <div id="beakerDropZone" class="panel-card p-3.5 sm:p-5 flex flex-col justify-between items-center relative overflow-hidden min-h-[420px] sm:min-h-[460px] border-t-4 border-t-teal-500">
+                        <div class="w-full flex flex-wrap justify-between items-center gap-2 z-10 mb-2">
+                            <span class="text-[11px] sm:text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-hand-pointer text-blue-500"></i> اسحب الأدوات بالماوس أو اللمس وغمسها في الكأس
+                            </span>
+                            <button onclick="resetProbesPosition()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] sm:text-xs px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-rotate-left"></i> إرجاع الأدوات
+                            </button>
+                        </div>
+
+                        <!-- STANDARDIZED ORGANIZED TOOL STAGING AREA -->
+                        <div class="w-full bg-slate-50/80 border border-slate-200/80 rounded-2xl p-2.5 sm:p-3 mb-2 z-10">
+                            <div class="text-[10px] sm:text-[11px] text-slate-600 font-bold mb-2 flex items-center justify-between px-1">
+                                <span class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-toolbox text-teal-600"></i> أدوات المختبر التفاعلية:
+                                </span>
+                                <span class="text-[9px] sm:text-[10px] text-slate-400 font-normal">اضغط أو اسحب للأعلى/للأسفل</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 sm:gap-3 items-center justify-items-center">
+                                <!-- Tool Slot 1: Conductivity Probe -->
+                                <div id="stagingCond" class="tool-staging-container"></div>
+                                <!-- Tool Slot 2: pH Probe -->
+                                <div id="stagingPh" class="tool-staging-container"></div>
+                                <!-- Tool Slot 3: Indicator Strip -->
+                                <div id="stagingStrip" class="tool-staging-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- BEAKER WORKSPACE -->
+                        <div class="relative w-full flex-1 flex justify-center items-end py-2 min-h-[250px] sm:min-h-[290px]" id="beakerWorkspace">
+                            <!-- Pouring Stream Visual Effect -->
+                            <div id="pourStreamEl" class="absolute top-0 w-2.5 rounded-full bg-sky-400 z-30 pointer-events-none opacity-0" style="left: 50%; transform: translateX(-50%);"></div>
+
+                            <!-- Central Beaker Container -->
+                            <div id="beakerElement" class="beaker-container shadow-inner">
+                                <div id="beakerLiquid" class="absolute bottom-0 w-full transition-all duration-500 opacity-80" style="height: 65%; background-color: #E0F2FE;"></div>
+                                <canvas id="particlesCanvas" class="absolute bottom-0 left-0 w-full h-full z-10"></canvas>
+                            </div>
+
+                            <!-- DRAGGABLE TOOL 1: pH PROBE -->
+                            <div id="phProbe" class="interactive-probe absolute flex flex-col items-center z-20" style="touch-action: none;">
+                                <div class="bg-white border-2 border-slate-700 text-slate-800 font-mono text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-lg shadow-md font-extrabold flex items-center gap-1 pointer-events-none">
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-500"></span>
+                                    <span>مجس pH</span>
+                                </div>
+                                <div class="w-2 sm:w-2.5 h-14 sm:h-18 bg-gradient-to-b from-slate-700 via-slate-500 to-slate-400 rounded-b-md shadow-md pointer-events-none"></div>
+                            </div>
+
+                            <!-- DRAGGABLE TOOL 2: CONDUCTIVITY PROBE -->
+                            <div id="condProbe" class="interactive-probe absolute flex flex-col items-center z-20" style="touch-action: none;">
+                                <div class="bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-lg shadow-md flex items-center gap-1 pointer-events-none">
+                                    <i class="fa-solid fa-lightbulb text-amber-600 text-[9px] sm:text-[10px]"></i> مجس التوصيل
+                                </div>
+                                <div id="probeBulbIcon" class="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-slate-300 border border-slate-400 text-slate-500 flex items-center justify-center my-0.5 transition-all pointer-events-none shadow-xs">
+                                    <i class="fa-solid fa-lightbulb text-[8px] sm:text-[10px]"></i>
+                                </div>
+                                <div class="flex gap-1 sm:gap-1.5 pointer-events-none">
+                                    <div class="w-1 sm:w-1.5 h-9 sm:h-12 bg-slate-700 rounded-b-md shadow-xs"></div>
+                                    <div class="w-1 sm:w-1.5 h-9 sm:h-12 bg-slate-700 rounded-b-md shadow-xs"></div>
+                                </div>
+                            </div>
+
+                            <!-- DRAGGABLE TOOL 3: INDICATOR STRIP -->
+                            <div id="indicatorStripTool" class="interactive-probe absolute flex flex-col items-center z-20" style="touch-action: none;">
+                                <div class="bg-slate-800 text-white text-[9px] sm:text-[10px] px-2 py-0.5 rounded shadow mb-1 font-extrabold pointer-events-none">ورقة الكاشف</div>
+                                <div id="stripTipColor" class="w-5 sm:w-6 h-14 sm:h-20 bg-amber-300 rounded-md border border-slate-300 shadow-md transition-colors duration-500 pointer-events-none"></div>
+                            </div>
+                        </div>
+
+                        <!-- ELECTRICAL CONDUCTIVITY QUICK READOUT -->
+                        <div class="w-full bg-slate-900 text-white rounded-xl p-2.5 mt-2 flex justify-between items-center font-mono shadow-inner">
+                            <div class="text-[9px] sm:text-[10px] text-slate-400 space-y-0.5">
+                                <div>مجس التوصيل:</div>
+                                <div id="condStateText" class="text-white font-sans font-black text-[11px] sm:text-xs">أغمس المجس في الكأس</div>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-[8px] sm:text-[9px] text-amber-400">شدة التوصيل</div>
+                                <div class="text-base sm:text-lg font-bold text-amber-300" id="condValueDisplay">mS 0.00</div>
+                            </div>
+                        </div>
+
+                        <!-- INDICATOR STRIP QUICK READOUT -->
+                        <div class="w-full bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200 mt-2 flex items-center justify-between text-xs">
+                            <div class="text-slate-700 font-bold flex items-center gap-1.5 text-[10px] sm:text-[11px]">
+                                <i class="fa-solid fa-vial-circle-check text-rose-500"></i>
+                                <span>اختبار ورقة الكاشف:</span>
+                                <span id="stripStatusLabelText" class="font-normal text-slate-500">أصفر الأصلي (اللون الأصلي - قبل الغمس)</span>
+                            </div>
+                            <div id="indicatorColorBox" class="w-7 h-4 sm:w-8 sm:h-5 rounded shadow-inner border border-slate-300 bg-amber-300 transition-all shrink-0"></div>
+                        </div>
+
+                        <!-- Particle Legend Container -->
+                        <div class="w-full bg-white p-2.5 rounded-xl border border-slate-200 mt-2 text-[10px] sm:text-[11px]">
+                            <span class="font-bold text-slate-700">مفتاح الجسيمات الكيميائية:</span>
+                            <div id="particleLegendBox" class="flex flex-wrap gap-2 sm:gap-3 mt-1 text-slate-600">
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> جزيئات الماء (H₂O)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INDICATORS & WATER IONIZATION EXPLANATION -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
+                <!-- SEPARATE SOLUTION INDICATORS ICON CARD -->
+                <div class="panel-card p-3.5 sm:p-5 border-t-4 border-t-teal-500 space-y-3.5 sm:space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-base sm:text-lg">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs sm:text-base font-extrabold text-slate-800">مؤشرات المحلول الكيميائي</h3>
+                                <p class="text-[10px] sm:text-xs text-slate-500 font-semibold">تحديث تلقائي لقيم الأيونات والرقم الهيدروجيني</p>
+                            </div>
+                        </div>
+                        <span id="indicatorsStatusBadge" class="text-[10px] sm:text-xs bg-slate-100 text-slate-600 font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-slate-200">جاهز للقياس</span>
+                    </div>
+
+                    <!-- WATER IONIZATION CONSTANT (Kw) & pH RELATIONSHIP DISPLAY -->
+                    <div class="p-3 sm:p-4 bg-gradient-to-r from-teal-50/90 via-sky-50/80 to-indigo-50/90 rounded-2xl border border-teal-200/80 space-y-3">
+                        <div class="flex items-center justify-between border-b border-teal-100/80 pb-2 flex-wrap gap-1">
+                            <span class="text-xs sm:text-sm font-black text-teal-950 flex items-center gap-1.5">
+                                <i class="fa-solid fa-atom text-teal-600 text-sm sm:text-base"></i> ثابت تأين الماء (Kw) عند 25°C
+                            </span>
+                            <span class="text-[10px] sm:text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-bold">درجة 25°C ثابتة</span>
+                        </div>
+                        
+                        <!-- Kw Equation Card -->
+                        <div class="bg-white/90 backdrop-blur p-2.5 sm:p-3 rounded-xl border border-teal-100 text-center space-y-0.5">
+                            <div class="formula text-xs sm:text-base font-black text-slate-800 tracking-wide" dir="ltr" style="unicode-bidi: isolate;">
+                                Kw = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴
+                            </div>
+                            <p class="text-[10px] sm:text-xs text-slate-600 font-bold">حاصل ضرب تركيز الأيونات يبقى ثابتًا في المحاليل المائية</p>
+                        </div>
+
+                        <!-- Prominent pH + pOH = 14 Section -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 border-b border-sky-200/80 pb-2 pt-1">
+                            <span class="text-xs sm:text-sm font-black text-slate-800">قانون الاتزان الهيدروجيني (25°C):</span>
+                            <span class="formula text-lg sm:text-2xl font-black text-indigo-900 tracking-wider bg-white/90 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-xl border border-indigo-200 shadow-xs" dir="ltr" style="unicode-bidi: isolate;">
+                                pH + pOH = 14
+                            </span>
+                        </div>
+                        
+                        <!-- Dynamic Values Readout -->
+                        <div class="flex items-center justify-center gap-2 text-xs sm:text-sm font-mono font-bold bg-white/90 py-1.5 sm:py-2 px-3 rounded-xl border border-sky-100 shadow-2xs">
+                            <span class="text-amber-800 font-sans font-extrabold text-[11px] sm:text-xs">القيمة الحالية:</span>
+                            <span id="formulaDynamicPh" class="text-rose-700 font-black">7.00</span> + 
+                            <span id="formulaDynamicPoh" class="text-blue-700 font-black">7.00</span> = 
+                            <span id="formulaDynamicSum" class="text-emerald-700 font-black text-sm sm:text-base">14.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WATER IONIZATION EXPLANATION CARD -->
+                <div class="panel-card p-3.5 sm:p-5 border-t-4 border-t-sky-500 space-y-3 text-xs">
+                    <div class="flex items-center gap-2 text-sky-800 font-extrabold border-b border-slate-100 pb-2">
+                        <i class="fa-solid fa-droplet text-sky-600 text-sm"></i>
+                        <span class="text-xs sm:text-sm font-black">مفهوم أيونات الماء والمادة المضافة والتأين</span>
+                    </div>
+                    
+                    <p class="text-slate-700 leading-loose text-[10px] sm:text-[11px] text-justify font-semibold">
+                        يتكون الماء النقي من توازن دقيق بين أيونات الهيدروجين الموجبة <span class="formula font-bold text-rose-600 px-0.5" dir="ltr" style="unicode-bidi: isolate;">[H⁺]</span> وأيونات الهيدروكسيد السالبة <span class="formula font-bold text-blue-600 px-0.5" dir="ltr" style="unicode-bidi: isolate;">[OH⁻]</span> وفق معادلة التفكك الذاتي:
+                    </p>
+
+                    <div class="bg-sky-50/70 py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl border border-sky-100 shadow-2xs text-center my-1">
+                        <span class="formula text-xs sm:text-sm text-sky-950 font-black" dir="ltr" style="unicode-bidi: isolate;">
+                            H₂O(l) &nbsp;⇌&nbsp; H⁺(aq) &nbsp;+&nbsp; OH⁻(aq)
+                        </span>
+                    </div>
+
+                    <p class="text-slate-600 text-[10px] sm:text-[11px] text-center font-bold">
+                        حيث يحافظ الماء النقي على ثابته الكيميائي <span class="formula font-bold text-slate-800" dir="ltr" style="unicode-bidi: isolate;">Kw = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴</span> عند 25°C.
+                    </p>
+
+                    <!-- Yellow Highlighted Box -->
+                    <div class="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3 sm:p-3.5 text-[10px] sm:text-[11px] text-slate-800 leading-relaxed space-y-1.5 sm:space-y-2">
+                        <div class="font-extrabold text-amber-900 flex items-center gap-1.5 border-b border-amber-200/60 pb-1 text-[11px] sm:text-xs">
+                            <i class="fa-solid fa-flask-vial text-amber-600"></i> تأثير تغير تركيز الأيونات:
+                        </div>
+                        <ul class="space-y-1.5 pr-2.5 sm:pr-3 list-disc text-slate-800 font-bold">
+                            <li class="leading-relaxed">
+                                <strong class="text-rose-700">ارتفاع [H⁺]:</strong> يُقلل تلقائياً تركيز [OH⁻] لتظل قيمة Kw ثابتة، مما يقلل pH عن 7 ويكون المحلول حمضياً.
+                            </li>
+                            <li class="leading-relaxed">
+                                <strong class="text-blue-700">ارتفاع [OH⁻]:</strong> يُقلل تلقائياً تركيز [H⁺] لتظل قيمة Kw ثابتة، مما يرفع pH عن 7 ويكون المحلول قاعدياً.
+                            </li>
+                            <li class="leading-relaxed">
+                                <strong class="text-emerald-700">تساوي التراكيز:</strong> تكون [H⁺] = [OH⁻] = 1.0 × 10⁻⁷ M والمحلول متعادلاً عند pH = 7.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Dynamic Solution State Light Blue Box -->
+                    <div id="waterBalanceExplanation" class="bg-sky-50 border border-sky-200 rounded-xl p-2.5 sm:p-3 text-[10px] sm:text-[11px] text-sky-950 font-extrabold leading-relaxed text-center shadow-2xs">
+                        <span class="text-emerald-700">حالة متعادلة:</span> تتساوى تراكيز الأيونات الحمضية والقاعدية تماماً عند <span class="formula font-bold text-emerald-800" dir="ltr" style="unicode-bidi: isolate;">[H⁺] = [OH⁻] = 1.0 × 10⁻⁷ mol/L</span>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- pH SPECTRUM BAR -->
+            <div class="panel-card p-3.5 sm:p-5 border-t-4 border-t-blue-500 space-y-3">
+                <div class="flex justify-between items-center text-xs font-extrabold text-slate-800">
+                    <span>مقياس الرقم الهيدروجيني (pH Scale 0 - 14)</span>
+                    <span class="text-slate-400 font-normal text-[10px] sm:text-xs">عند درجة حرارة 25°C</span>
+                </div>
+
+                <div class="relative w-full my-2">
+                    <!-- Soft, harmonious pastel color gradient segments -->
+                    <div class="w-full h-7 sm:h-8 rounded-xl overflow-hidden flex border border-slate-200 shadow-inner">
+                        <div class="h-full flex-1" style="background-color: #E9D5FF;" title="pH 0"></div>
+                        <div class="h-full flex-1" style="background-color: #DDD6FE;" title="pH 1"></div>
+                        <div class="h-full flex-1" style="background-color: #C7D2FE;" title="pH 2"></div>
+                        <div class="h-full flex-1" style="background-color: #BFDBFE;" title="pH 3"></div>
+                        <div class="h-full flex-1" style="background-color: #BAE6FD;" title="pH 4"></div>
+                        <div class="h-full flex-1" style="background-color: #A5F3FC;" title="pH 5"></div>
+                        <div class="h-full flex-1" style="background-color: #99F6E4;" title="pH 6"></div>
+                        <div class="h-full flex-1" style="background-color: #86EFAC;" title="pH 7"></div>
+                        <div class="h-full flex-1" style="background-color: #BBF7D0;" title="pH 8"></div>
+                        <div class="h-full flex-1" style="background-color: #D9F99D;" title="pH 9"></div>
+                        <div class="h-full flex-1" style="background-color: #FEF08A;" title="pH 10"></div>
+                        <div class="h-full flex-1" style="background-color: #FDE68A;" title="pH 11"></div>
+                        <div class="h-full flex-1" style="background-color: #FED7AA;" title="pH 12"></div>
+                        <div class="h-full flex-1" style="background-color: #FECACA;" title="pH 13"></div>
+                        <div class="h-full flex-1" style="background-color: #FCA5A5;" title="pH 14"></div>
+                    </div>
+                    <!-- Pointer Arrow -->
+                    <div id="phSpectrumPointer" class="absolute top-0 bottom-0 w-1 bg-slate-900 transition-all duration-500 z-20 pointer-events-none" style="left: 50%;">
+                        <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 bg-slate-900 rotate-45 -mt-1.5 -ml-1 sm:-mt-2 sm:-ml-1.5 border-2 border-white rounded-xs shadow-md"></div>
+                    </div>
+                </div>
+
+                <!-- Numbers 0 to 14 -->
+                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] text-center text-[9px] sm:text-xs font-black" style="direction: ltr;">
+                    <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+                </div>
+
+                <!-- Label Positioning -->
+                <div class="relative w-full h-7 sm:h-8 pt-1 text-[11px] sm:text-xs font-bold">
+                    <span class="absolute left-0 -translate-x-0 text-rose-800 bg-rose-50 px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full border border-rose-200 shadow-2xs font-extrabold">حمضي</span>
+                    <span class="absolute left-1/2 -translate-x-1/2 text-emerald-800 bg-emerald-50 px-2.5 py-0.5 sm:px-3 sm:py-0.5 rounded-full border border-emerald-200 font-black shadow-2xs">متعادل</span>
+                    <span class="absolute right-0 translate-x-0 text-indigo-800 bg-indigo-50 px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full border border-indigo-200 shadow-2xs font-extrabold">قاعدي</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SAVED EXPERIMENTS -->
+        <div id="tab-compare" class="tab-content hidden space-y-4 sm:space-y-5">
+            <div class="panel-card p-4 sm:p-6 border-t-4 border-t-purple-500 space-y-5 sm:space-y-6">
+                <div class="flex justify-between items-center gap-2">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-extrabold text-slate-800"><i class="fa-solid fa-scale-balanced text-purple-600 ml-1"></i> مقارنة التجارب المحفوظة</h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500">قارن بين نتائج الأحماض والقواعد وقيم pH والتوصيل الكهربائي.</p>
+                    </div>
+                    <button onclick="clearSavedLabs()" class="bg-rose-100 hover:bg-rose-200 text-rose-800 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition">مسح التجارب</button>
+                </div>
+                <div id="savedLabsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+                <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200">
+                    <div class="relative w-full h-56 sm:h-64">
+                        <canvas id="compareCanvasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: QUIZ SECTION ("قيّم نفسك") -->
+        <div id="tab-quiz" class="tab-content hidden space-y-4 sm:space-y-5">
+            <div class="panel-card p-3.5 sm:p-6 border-t-4 border-t-emerald-500 space-y-4 sm:space-y-5">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 sm:pb-4 gap-2.5">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-question text-emerald-600"></i>
+                            <span>قيّم نفسك</span>
+                        </h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500">اختبر معلوماتك الكيميائية في الأحماض والقواعد عبر 10 أسئلة دقيقة.</p>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                        <div class="bg-emerald-100 text-emerald-800 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold">
+                            النتيجة: <span id="quizScoreDisplay">0</span> / <span id="quizTotalDisplay">10</span>
+                        </div>
+                        <button onclick="resetQuiz()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quizMainContainer" class="max-w-2xl mx-auto bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 space-y-3.5 sm:space-y-4">
+                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div id="quizProgressBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 10%;"></div>
+                    </div>
+                    <div class="flex justify-between text-[11px] sm:text-xs text-slate-400 font-bold">
+                        <span id="quizNumDisplay">السؤال 1 / 10</span>
+                    </div>
+                    <h3 id="quizQuestionText" class="text-xs sm:text-base font-extrabold text-slate-800 leading-relaxed">جاري التحميل...</h3>
+                    <div id="quizOptionsContainer" class="space-y-2"></div>
+                    <div id="quizFeedbackBox" class="hidden rounded-xl p-3 sm:p-4 text-xs space-y-1 border"></div>
+                    <div class="flex justify-end pt-1">
+                        <button id="quizNextBtn" onclick="nextQuizQuestion()" class="hidden bg-emeraldPrimary hover:bg-emeraldHover text-white px-4 py-2 sm:px-5 sm:py-2 rounded-xl text-xs font-bold transition">السؤال التالي</button>
+                    </div>
+                </div>
+
+                <div id="quizFinalResultBox" class="hidden max-w-2xl mx-auto space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- TAB 4: INTERACTIVE GAMES SECTION -->
+        <div id="tab-challenges" class="tab-content hidden space-y-5 sm:space-y-6">
+
+            <!-- OVERALL PROGRESS BAR & UNIFIED SCORE BOARD -->
+            <div class="panel-card p-3.5 sm:p-5 border-t-4 border-t-emerald-500 space-y-3.5 sm:space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-black text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                            <span>لوحة التقدم الكيميائي والإنجاز الشامل</span>
+                        </h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500 font-semibold">أكملي الألعاب الست لتحقيق درجة 100% والحصول على شهادة إنجاز كيميائي رسمية.</p>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl text-center self-start sm:self-auto">
+                        <div class="text-[9px] sm:text-[10px] text-emerald-800 font-bold">المجموع الكلي للرصيد:</div>
+                        <div class="text-base sm:text-lg font-black text-emerald-700" id="globalTotalScoreDisplay">0 / 600 (0%)</div>
+                    </div>
+                </div>
+
+                <!-- 6-SEGMENT PROGRESS BAR -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-[11px] sm:text-xs font-bold text-slate-700">
+                        <span id="globalProgressCounter">اكتملت 0 من 6 تحديات</span>
+                        <span id="globalLevelTitleBadge" class="bg-slate-100 text-slate-800 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px]">كيميائية مبتدئة</span>
+                    </div>
+                    <div class="grid grid-cols-6 gap-1 sm:gap-2 h-2.5 sm:h-3 w-full bg-slate-100 p-0.5 sm:p-1 rounded-xl border border-slate-200">
+                        <div id="progSeg1" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="المحاليل المجهولة"></div>
+                        <div id="progSeg2" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="مهمة التعادل الكيميائي"></div>
+                        <div id="progSeg3" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="المحققة الكيميائية"></div>
+                        <div id="progSeg4" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="تحدي مقياس الرقم الهيدروجيني"></div>
+                        <div id="progSeg5" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="سر الأيونات"></div>
+                        <div id="progSeg6" class="h-full rounded-md bg-slate-200 transition-colors duration-500" title="تحدي مختبر الأيونات"></div>
+                    </div>
+                </div>
+
+                <!-- AUTOMATIC ACHIEVEMENT TITLES -->
+                <div class="bg-slate-50 p-2.5 sm:p-3 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-700">مستوى صعوبة الألعاب الكيميائية واللقب المكتسب تلقائياً:</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs font-bold">
+                        <div id="titleCardBeg" class="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 transition">
+                            <i class="fa-solid fa-seedling text-emerald-500 ml-1"></i> كيميائية مبتدئة
+                            <div class="text-[9px] sm:text-[10px] text-slate-400 font-normal">أقل من 75% من النقاط</div>
+                        </div>
+                        <div id="titleCardMid" class="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 transition">
+                            <i class="fa-solid fa-medal text-blue-500 ml-1"></i> كيميائية متمكنة
+                            <div class="text-[9px] sm:text-[10px] text-slate-400 font-normal">من 75% إلى أقل من 100%</div>
+                        </div>
+                        <div id="titleCardExp" class="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 transition">
+                            <i class="fa-solid fa-crown text-amber-500 ml-1"></i> خبيرة الكيمياء
+                            <div class="text-[9px] sm:text-[10px] text-slate-400 font-normal">100% الدرجة الكاملة</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GAME DIFFICULTY SELECTOR -->
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 text-xs font-bold">
+                    <span class="text-slate-700 text-[11px] sm:text-xs"><i class="fa-solid fa-sliders text-sky-600 ml-1"></i> اختر مستوى صعوبة التحديات:</span>
+                    <div class="flex gap-1.5 sm:gap-2">
+                        <button onclick="setDifficulty('easy')" id="diffBtnEasy" class="px-2.5 py-1 rounded-lg border bg-sky-600 text-white border-sky-600 transition text-[11px] sm:text-xs">مبتدئة</button>
+                        <button onclick="setDifficulty('medium')" id="diffBtnMedium" class="px-2.5 py-1 rounded-lg border bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200 transition text-[11px] sm:text-xs">متمكنة</button>
+                        <button onclick="setDifficulty('hard')" id="diffBtnHard" class="px-2.5 py-1 rounded-lg border bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200 transition text-[11px] sm:text-xs">خبيرة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME SELECTION TABS & CLICKABLE NAMES -->
+            <div id="challenge-selection-menu" class="space-y-4">
+                <div class="panel-card p-3.5 sm:p-4 space-y-3">
+                    <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+                        <i class="fa-solid fa-flask text-teal-600 text-base sm:text-lg"></i>
+                        <h3 class="text-xs sm:text-sm font-extrabold text-slate-800">قائمة التحديات والألعاب الكيميائية (اضغطي للبدء مباشرة)</h3>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-[11px] sm:text-xs font-bold">
+                        <button onclick="startInteractiveGame('unknown')" class="p-2 sm:p-2.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 rounded-xl border border-cyan-200 transition">1. المحاليل المجهولة</button>
+                        <button onclick="startInteractiveGame('neutralization')" class="p-2 sm:p-2.5 bg-purple-50 hover:bg-purple-100 text-purple-900 rounded-xl border border-purple-200 transition">2. مهمة التعادل الكيميائي</button>
+                        <button onclick="startInteractiveGame('detective')" class="p-2 sm:p-2.5 bg-pink-50 hover:bg-pink-100 text-pink-900 rounded-xl border border-pink-200 transition">3. المحققة الكيميائية</button>
+                        <button onclick="startInteractiveGame('ph_scale')" class="p-2 sm:p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 rounded-xl border border-indigo-200 transition">4. تحدي مقياس الرقم الهيدروجيني</button>
+                        <button onclick="startInteractiveGame('ions_secret')" class="p-2 sm:p-2.5 bg-teal-50 hover:bg-teal-100 text-teal-900 rounded-xl border border-teal-200 transition">5. سر الأيونات</button>
+                        <button onclick="startInteractiveGame('ion_lab')" class="p-2 sm:p-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl border border-amber-200 transition">6. تحدي مختبر الأيونات</button>
+                    </div>
+                </div>
+
+                <!-- 6 DISTINCTIVE GAME CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-cyan-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-flask-vial"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">1. المحاليل المجهولة</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">4 كؤوس تحوي محاليل مجهولة. افحصيها باستخدام مقياس pH واختبارات الكاشف ثم صنفيها.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('unknown')" class="w-full py-2 sm:py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-purple-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">2. مهمة التعادل الكيميائي</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">تحكمي بأحجام وتراكيز الحمض والقاعدة وضبط المعايرة للوصول لنقطة التعادل بالضبط.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('neutralization')" class="w-full py-2 sm:py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-pink-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-user-secret"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">3. المحققة الكيميائية</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">اطلبي اختبارات pH، التوصيل والتأين لجمع الأدلة وتحديد فئة المادة الغامضة بدقة.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('detective')" class="w-full py-2 sm:py-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-indigo-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">4. تحدي مقياس الرقم الهيدروجيني</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">حركي المؤشر على مقياس pH من 0 إلى 14 وصنفي المحاليل المتنوعة بناءً على القيم العلمية.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('ph_scale')" class="w-full py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-teal-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-atom"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">5. سر الأيونات</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">حللي تراكيز [H⁺] و [OH⁻] وتوقعي طبيعة المحلول مع مشاهدة التمثيل الأيوني الحي.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('ions_secret')" class="w-full py-2 sm:py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="game-card panel-card p-4 sm:p-5 space-y-3 sm:space-y-4 border-t-4 border-t-amber-500 flex flex-col justify-between">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg sm:text-xl font-bold shadow-sm">
+                                <i class="fa-solid fa-vial-circle-check"></i>
+                            </div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-slate-800">6. تحدي مختبر الأيونات</h3>
+                            <p class="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-semibold">تفاعلي مع شحنات الأيونات وتفكك المركبات ومعادلات التأين في بيئة معملية متقدمة.</p>
+                        </div>
+                        <button onclick="startInteractiveGame('ion_lab')" class="w-full py-2 sm:py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>بدء التحدي</span><i class="fa-solid fa-play text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CERTIFICATE ACTION CONTAINER -->
+                <div id="certificateActionBox" class="panel-card p-4 sm:p-5 border-t-4 border-t-amber-500 text-center space-y-2.5 sm:space-y-3">
+                    <h3 class="text-xs sm:text-sm font-extrabold text-slate-800">شهادة الإنجاز الكيميائي النهائي</h3>
+                    <p id="certStatusMsg" class="text-[10px] sm:text-xs text-slate-500">أكملي جميع الألعاب الست (6 من 6) لإصدار وحفظ الشهادة الرسمية.</p>
+                    <button id="btnOpenCertificate" onclick="openCertificateModal()" disabled class="bg-slate-300 text-slate-500 font-bold py-2 sm:py-2.5 px-5 sm:px-6 rounded-xl text-xs transition cursor-not-allowed mx-auto">
+                        <i class="fa-solid fa-award ml-1"></i> عرض وطباعة الشهادة
+                    </button>
+                </div>
+            </div>
+
+            <!-- DEDICATED GAME PLAYSPACE CONTAINER -->
+            <div id="game-workspace-container" class="hidden panel-card p-3.5 sm:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 sm:pb-3 gap-2">
+                    <button onclick="exitGameToMenu()" class="text-slate-500 hover:text-slate-800 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 bg-slate-100 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-slate-200">
+                        <i class="fa-solid fa-arrow-right"></i> <span class="hidden sm:inline">العودة للقائمة</span><span class="sm:hidden">خروج</span>
+                    </button>
+                    <h3 id="gameTitleHeader" class="font-extrabold text-slate-800 text-xs sm:text-base text-center">اسم اللعبة التفاعلية</h3>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <span id="gameScoreDisplay" class="text-[10px] sm:text-xs bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full border border-emerald-200">النقاط: 0</span>
+                        <button onclick="restartActiveGame()" class="text-[11px] sm:text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg font-bold border border-slate-200">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="gameplayDynamicArea" class="min-h-[320px] sm:min-h-[380px] flex flex-col justify-center"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CERTIFICATE MODAL -->
+    <div id="certificateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-6 space-y-5 relative shadow-2xl overflow-y-auto max-h-[90vh]">
+            <button onclick="closeCertificateModal()" class="absolute top-4 left-4 text-slate-400 hover:text-slate-700 text-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <div id="certificatePrintArea" class="certificate-border p-5 sm:p-8 rounded-2xl text-center space-y-4 relative">
+                <div class="text-amber-600 text-3xl"><i class="fa-solid fa-award"></i></div>
+                <h2 class="text-xl sm:text-2xl font-black text-amber-900">شهادة إنجاز كيميائي</h2>
+                <p class="text-xs text-slate-600 font-bold">تُمنح هذه الشهادة بتقدير واعتزاز للطالبة المتميزة:</p>
+                
+                <div class="max-w-xs mx-auto">
+                    <input type="text" id="certStudentNameInput" value="تالين علي الحازمي" class="w-full text-center font-extrabold text-slate-800 border-b-2 border-amber-400 focus:outline-none bg-transparent py-1 text-base" placeholder="اكتبي اسم الطالبة هنا">
+                </div>
+
+                <p class="text-xs text-slate-700 leading-relaxed font-semibold max-w-md mx-auto">
+                    بفضولكِ العلمي ودقتكِ في الملاحظة، حوّلتِ الأسئلة إلى اكتشافات، وأثبتِّ أن لكل تفاعل تفسيرًا!
+                </p>
+
+                <div class="bg-amber-100/80 border border-amber-300/80 p-3 rounded-xl inline-block text-xs font-bold text-amber-950 space-y-1">
+                    <div>اللقب المستحق: <span id="certTitleVal" class="text-amber-800 font-black">خبيرة الكيمياء</span></div>
+                    <div>مجموع النقاط: <span id="certScoreVal" class="font-mono">600 / 600</span> (<span id="certPercentVal">100%</span>)</div>
+                    <div>تاريخ الإنجاز: <span id="certDateVal" class="font-mono">2026/10/29</span></div>
+                </div>
+
+                <div class="pt-2 text-[10px] text-slate-500 font-bold border-t border-amber-200 flex justify-between">
+                    <span>الصف: ثالث/١ موهبة</span>
+                    <span>معلمة المادة: أ. منال باحريش</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
+                <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition"><i class="fa-solid fa-print ml-1"></i> طباعة الشهادة</button>
+                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition"><i class="fa-solid fa-file-pdf ml-1"></i> حفظ الشهادة بصيغة PDF</button>
+                <button onclick="closeCertificateModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs transition">العودة للألعاب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-3.5 mt-8 shadow-inner">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-2.5 text-[11px] sm:text-xs font-bold text-slate-700 text-center md:text-right">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-1.5">
+                    <span class="text-emeraldPrimary font-extrabold flex items-center gap-1">
+                        <i class="fa-solid fa-graduation-cap"></i> عمل الطالبات:
+                    </span>
+                    <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-800">تالين علي الحازمي</span>
+                    <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-800">فرح محمد الغامدي</span>
+                    <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-800">عريب فهد المولد</span>
+                </div>
+                <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 text-slate-600">
+                    <div><span>الصف:</span> <span class="text-slate-800">ثالث/١ موهبة</span></div>
+                    <span>|</span>
+                    <div><span>العام الدراسي:</span> <span class="text-slate-800">١٤٤٨هـ – ٢٠٢٦م</span></div>
+                    <span>|</span>
+                    <div><span>معلمة الكيمياء:</span> <span class="text-slate-800 font-extrabold">منال باحريش</span></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT SIMULATION & GAMES ENGINE -->
+    <script>
+        // Helper for Scientific Notation formatting
+        function formatScientificNotation(val) {
+            if (val === null || val === undefined || isNaN(val)) return '0.00 M';
+            if (val === 0) return '0.00 M';
+            let exp = Math.floor(Math.log10(val));
+            let mantissa = (val / Math.pow(10, exp)).toFixed(2);
+            return `${mantissa} × 10${toSuperscript(exp)} mol/L`;
+        }
+
+        function toSuperscript(num) {
+            const map = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+            return String(num).split('').map(c => map[c] || c).join('');
+        }
+
+        const SUBSTANCES = {
+            'HCl': { name: 'حمض الهيدروكلوريك (HCl)', formula: 'HCl', type: 'acid_strong', ka: 1e6, eq: 'HCl + H₂O → H⁺ + Cl⁻', desc: 'حمض قوي يتفكك بالكامل ليعطي تركيزاً عالياً جداً من أيونات H⁺.', color: '#FECACA', cations: ['H⁺'], anions: ['Cl⁻'] },
+            'HNO3': { name: 'حمض النيتريك (HNO₃)', formula: 'HNO₃', type: 'acid_strong', ka: 1e6, eq: 'HNO₃ + H₂O → H⁺ + NO₃⁻', desc: 'حمض نيتروجيني قوي يتأين كاملاً في الماء.', color: '#FECACA', cations: ['H⁺'], anions: ['NO₃⁻'] },
+            'H2SO4': { name: 'حمض الكبريتيك (H₂SO₄)', formula: 'H₂SO₄', type: 'acid_strong', ka: 1e6, eq: 'H₂SO₄ + H₂O → 2H⁺ + SO₄²⁻', desc: 'حمض ثنائي البروتون تام التأين للبروتون الأول.', color: '#FCA5A5', cations: ['H⁺'], anions: ['SO₄²⁻'] },
+            'HBr': { name: 'حمض الهيدروبروميك (HBr)', formula: 'HBr', type: 'acid_strong', ka: 1e6, eq: 'HBr + H₂O → H⁺ + Br⁻', desc: 'حمض يتأين كلياً في الوسط المائي.', color: '#FECACA', cations: ['H⁺'], anions: ['Br⁻'] },
+
+            'CH3COOH': { name: 'حمض الأسيتيك / الخليك (CH₃COOH)', formula: 'CH₃COOH', type: 'acid_weak', ka: 1.8e-5, eq: 'CH₃COOH + H₂O ⇌ H⁺ + CH₃COO⁻', desc: 'حمض عضوي يتأين جزئياً ويكون حالة اتزان كيميائي.', color: '#FED7AA', cations: ['H⁺'], anions: ['CH₃COO⁻'], neutralMol: 'CH₃COOH' },
+            'HCOOH': { name: 'حمض الفورميك / النمليك (HCOOH)', formula: 'HCOOH', type: 'acid_weak', ka: 1.8e-4, eq: 'HCOOH + H₂O ⇌ H⁺ + HCOO⁻', desc: 'حمض يتأين جزئياً بدرجة قليلة في الماء.', color: '#FED7AA', cations: ['H⁺'], anions: ['HCOO⁻'], neutralMol: 'HCOOH' },
+            'HF': { name: 'حمض الهيدروفلوريك (HF)', formula: 'HF', type: 'acid_weak', ka: 6.8e-4, eq: 'HF + H₂O ⇌ H⁺ + F⁻', desc: 'حمض ذو رابطة هيدروجينية قوية تمنع تأينه الكامل.', color: '#FDE68A', cations: ['H⁺'], anions: ['F⁻'], neutralMol: 'HF' },
+            'H2CO3': { name: 'حمض الكربونيك (H₂CO₃)', formula: 'H₂CO₃', type: 'acid_weak', ka: 4.3e-7, eq: 'H₂CO₃ + H₂O ⇌ H⁺ + HCO₃⁻', desc: 'حمض ضئيل التأين ناتج عن انحلال CO₂ في الماء.', color: '#FEF08A', cations: ['H⁺'], anions: ['HCO₃⁻'], neutralMol: 'H₂CO₃' },
+
+            'NaOH': { name: 'هيدروكسيد الصوديوم (NaOH)', formula: 'NaOH', type: 'base_strong', kb: 1e6, eq: 'NaOH (s) → Na⁺ (aq) + OH⁻ (aq)', desc: 'قاعدة تتفكك بالكامل لتعطي تركيزاً عالياً من OH⁻.', color: '#BFDBFE', cations: ['Na⁺'], anions: ['OH⁻'] },
+            'KOH': { name: 'هيدروكسيد البوتاسيوم (KOH)', formula: 'KOH', type: 'base_strong', kb: 1e6, eq: 'KOH (s) → K⁺ (aq) + OH⁻ (aq)', desc: 'قاعدة قلوية يتفكك مركبها تماماً بالماء.', color: '#BFDBFE', cations: ['K⁺'], anions: ['OH⁻'] },
+            'CaOH2': { name: 'هيدروكسيد الكالسيوم (Ca(OH)₂)', formula: 'Ca(OH)₂', type: 'base_strong', kb: 1e6, eq: 'Ca(OH)₂ (s) → Ca²⁺ (aq) + 2OH⁻ (aq)', desc: 'قاعدة ثنائية الهيدروكسيد تتفكك كلياً.', color: '#93C5FD', cations: ['Ca²⁺'], anions: ['OH⁻'] },
+            'LiOH': { name: 'هيدروكسيد الليثيوم (LiOH)', formula: 'LiOH', type: 'base_strong', kb: 1e6, eq: 'LiOH (s) → Li⁺ (aq) + OH⁻ (aq)', desc: 'قاعدة قلوية خفيفة يتفكك مركبها بالكامل.', color: '#BFDBFE', cations: ['Li⁺'], anions: ['OH⁻'] },
+
+            'NH3': { name: 'الأمونيا / النشادر (NH₃)', formula: 'NH₃', type: 'base_weak', kb: 1.8e-5, eq: 'NH₃ + H₂O ⇌ NH₄⁺ + OH⁻', desc: 'قاعدة تتفاعل جزئياً مع الماء لإنتاج OH⁻.', color: '#E0F2FE', cations: ['NH₄⁺'], anions: ['OH⁻'], neutralMol: 'NH₃' },
+            'CH3NH2': { name: 'ميثيل أمين (CH₃NH₂)', formula: 'CH₃NH₂', type: 'base_weak', kb: 4.4e-4, eq: 'CH₃NH₂ + H₂O ⇌ CH₃NH₃⁺ + OH⁻', desc: 'قاعدة عضوية تتأين جزئياً.', color: '#E0F2FE', cations: ['CH₃NH₃⁺'], anions: ['OH⁻'], neutralMol: 'CH₃NH₂' },
+
+            'NaCl': { name: 'محلول كلوريد الصوديوم (NaCl)', formula: 'NaCl', type: 'neutral', eq: 'NaCl (s) → Na⁺ (aq) + Cl⁻ (aq)', desc: 'ملح متعادل ذائب لا يغير تركيز الهيدروجين أو الهيدروكسيد.', color: '#FEF08A', cations: ['Na⁺'], anions: ['Cl⁻'] }
+        };
+
+        let state = {
+            mode: 'substance', // 'substance' or 'ions'
+            currentSubstanceKey: 'HCl',
+            conc: 0.100,
+            vol: 500,
+            customH: 1e-7,
+            customOH: 1e-7,
+            isPoured: false,
+            probes: { ph: false, cond: false, strip: false },
+            calculated: { ph: 7.00, poh: 7.00, h3o: 1e-7, oh: 1e-7, condValue: 0.0, alpha: 0 },
+            savedExperiments: []
+        };
+
+        // MODE SELECTION HANDLER
+        function setExperimentMode(mode) {
+            state.mode = mode;
+            const subControls = document.getElementById('substanceModeControls');
+            const ionControls = document.getElementById('ionsModeControls');
+            const eqBox = document.getElementById('substanceEquationBox');
+            const btnSub = document.getElementById('modeBtnSubstance');
+            const btnIon = document.getElementById('modeBtnIons');
+            const badge = document.getElementById('activeModeBadge');
+            const ionRow = document.getElementById('ionizationRow');
+
+            if (mode === 'substance') {
+                if (subControls) subControls.classList.remove('hidden');
+                if (ionControls) ionControls.classList.add('hidden');
+                if (eqBox) eqBox.classList.remove('hidden');
+                if (ionRow) ionRow.classList.remove('hidden');
+                if (badge) { badge.innerText = 'نمط مادة كيميائية جاهزة'; badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 self-start sm:self-auto'; }
+                if (btnSub) btnSub.className = 'p-3.5 rounded-2xl border text-right transition flex items-start gap-3 bg-emerald-50 border-emerald-500 shadow-sm';
+                if (btnIon) btnIon.className = 'p-3.5 rounded-2xl border text-right transition flex items-start gap-3 bg-white border-slate-200 hover:border-slate-300';
+            } else {
+                if (subControls) subControls.classList.add('hidden');
+                if (ionControls) ionControls.classList.remove('hidden');
+                if (eqBox) eqBox.classList.add('hidden');
+                if (ionRow) ionRow.classList.add('hidden');
+                if (badge) { badge.innerText = 'نمط التحكم في تركيز الأيونات'; badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 self-start sm:self-auto'; }
+                if (btnSub) btnSub.className = 'p-3.5 rounded-2xl border text-right transition flex items-start gap-3 bg-white border-slate-200 hover:border-slate-300';
+                if (btnIon) btnIon.className = 'p-3.5 rounded-2xl border text-right transition flex items-start gap-3 bg-indigo-50 border-indigo-500 shadow-sm';
+            }
+            updateAllCalculationsAndUI();
+        }
+
+        // ION MODE CONTROLS HANDLERS
+        function onIonInputChange(ionType) {
+            if (ionType === 'H') {
+                let val = parseFloat(document.getElementById('ionInputH').value);
+                if (isNaN(val) || val <= 0) val = 1e-14;
+                if (val > 1) val = 1;
+                state.customH = val;
+                state.customOH = 1.0e-14 / val;
+            } else {
+                let val = parseFloat(document.getElementById('ionInputOH').value);
+                if (isNaN(val) || val <= 0) val = 1e-14;
+                if (val > 1) val = 1;
+                state.customOH = val;
+                state.customH = 1.0e-14 / val;
+            }
+            syncIonControlsUI();
+            updateAllCalculationsAndUI();
+        }
+
+        function onIonSliderChange(ionType) {
+            if (ionType === 'H') {
+                let phVal = parseFloat(document.getElementById('ionSliderH').value);
+                state.customH = Math.pow(10, -phVal);
+                state.customOH = 1.0e-14 / state.customH;
+            } else {
+                let pohVal = parseFloat(document.getElementById('ionSliderOH').value);
+                state.customOH = Math.pow(10, -pohVal);
+                state.customH = 1.0e-14 / state.customOH;
+            }
+            syncIonControlsUI();
+            updateAllCalculationsAndUI();
+        }
+
+        function syncIonControlsUI() {
+            let ph = -Math.log10(state.customH);
+            let poh = 14 - ph;
+            const slH = document.getElementById('ionSliderH');
+            const slOH = document.getElementById('ionSliderOH');
+            const inH = document.getElementById('ionInputH');
+            const inOH = document.getElementById('ionInputOH');
+            const dtH = document.getElementById('ionDispTextH');
+            const dtOH = document.getElementById('ionDispTextOH');
+
+            if (slH) slH.value = ph.toFixed(1);
+            if (slOH) slOH.value = poh.toFixed(1);
+            if (inH) inH.value = state.customH.toExponential(2);
+            if (inOH) inOH.value = state.customOH.toExponential(2);
+            if (dtH) dtH.innerText = formatScientificNotation(state.customH);
+            if (dtOH) dtOH.innerText = formatScientificNotation(state.customOH);
+
+            const expBox = document.getElementById('ionModeExplanationBox');
+            if (expBox) {
+                if (ph < 6.8) {
+                    expBox.className = 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-950 font-bold leading-relaxed';
+                    expBox.innerHTML = `توضيح علمي: تركيز [H⁺] (${formatScientificNotation(state.customH)}) أعلى من [OH⁻] (${formatScientificNotation(state.customOH)})، المحلول حمضي و pH = ${ph.toFixed(2)}.`;
+                } else if (ph > 7.2) {
+                    expBox.className = 'bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-950 font-bold leading-relaxed';
+                    expBox.innerHTML = `توضيح علمي: تركيز [OH⁻] (${formatScientificNotation(state.customOH)}) أعلى من [H⁺] (${formatScientificNotation(state.customH)})، المحلول قاعدي و pH = ${ph.toFixed(2)}.`;
+                } else {
+                    expBox.className = 'bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-950 font-bold leading-relaxed';
+                    expBox.innerHTML = `توضيح علمي: تتساوى تراكيز الأيونات [H⁺] = [OH⁻] = 1.00 × 10⁻⁷ M، المحلول متعادل تماماً و pH = 7.00.`;
+                }
+            }
+        }
+
+        // GLOBAL PROBE IMMERSION TOGGLE FUNCTION
+        function toggleProbeImmersion(type) {
+            if (!state.probes) {
+                state.probes = { ph: false, cond: false, strip: false };
+            }
+            state.probes[type] = !state.probes[type];
+            updateProbePositions();
+            updateAllCalculationsAndUI();
+        }
+
+        function resetProbesPosition() {
+            state.probes.ph = false;
+            state.probes.cond = false;
+            state.probes.strip = false;
+            updateProbePositions();
+            updateAllCalculationsAndUI();
+        }
+
+        function resetCurrentLab() {
+            state.isPoured = false;
+            state.conc = 0.100;
+            state.vol = 500;
+            state.customH = 1e-7;
+            state.customOH = 1e-7;
+            const concSl = document.getElementById('concSlider');
+            if(concSl) concSl.value = 0.100;
+            const volSl = document.getElementById('volSlider');
+            if(volSl) volSl.value = 500;
+            const dispConc = document.getElementById('dispConcVal');
+            if(dispConc) dispConc.innerText = 'M 0.100';
+            const dispVol = document.getElementById('dispVolVal');
+            if(dispVol) dispVol.innerText = 'mL 500';
+            syncIonControlsUI();
+            resetProbesPosition();
+        }
+
+        // SHARED SCORING & GAME PROGRESS TRACKER
+        let gameDifficulty = 'easy'; // easy, medium, hard
+        let gamesData = {
+            'unknown': { completed: false, score: 0, maxScore: 100 },
+            'neutralization': { completed: false, score: 0, maxScore: 100 },
+            'detective': { completed: false, score: 0, maxScore: 100 },
+            'ph_scale': { completed: false, score: 0, maxScore: 100 },
+            'ions_secret': { completed: false, score: 0, maxScore: 100 },
+            'ion_lab': { completed: false, score: 0, maxScore: 100 }
+        };
+
+        let activeGameType = null;
+        let activeGameScore = 0;
+        let compareChartInstance = null;
+        let particlesPool = [];
+
+        function populateSubstanceDropdowns() {
+            const listSelect = document.getElementById('substanceListSelect');
+            if(!listSelect) return;
+            listSelect.innerHTML = '';
+            const category = document.getElementById('strengthTypeSelect').value;
+
+            for (let key in SUBSTANCES) {
+                let item = SUBSTANCES[key];
+                if (item.type === category || (category === 'acid_strong' && item.type === 'neutral')) {
+                    let opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = item.name;
+                    listSelect.appendChild(opt);
+                }
+            }
+            state.currentSubstanceKey = listSelect.value || 'HCl';
+        }
+
+        function onTypeCategoryChange() {
+            populateSubstanceDropdowns();
+            state.isPoured = false;
+            updateAllCalculationsAndUI();
+        }
+
+        function onSubstanceSelectChange() {
+            state.currentSubstanceKey = document.getElementById('substanceListSelect').value;
+            state.isPoured = false;
+            updateAllCalculationsAndUI();
+        }
+
+        function onSliderInputChange() {
+            state.conc = parseFloat(document.getElementById('concSlider').value);
+            state.vol = parseInt(document.getElementById('volSlider').value);
+            document.getElementById('dispConcVal').innerText = 'M ' + state.conc.toFixed(3);
+            document.getElementById('dispVolVal').innerText = 'mL ' + state.vol;
+            updateAllCalculationsAndUI();
+        }
+
+        function pourSubstanceToBeaker() {
+            state.isPoured = true;
+            
+            // Trigger visible liquid stream animation
+            const stream = document.getElementById('pourStreamEl');
+            if (stream) {
+                stream.classList.remove('pour-stream-active');
+                void stream.offsetWidth; // Trigger reflow
+                stream.classList.add('pour-stream-active');
+            }
+
+            updateAllCalculationsAndUI();
+        }
+
+        function getIndicatorColor(ph) {
+            if (ph < 6.8) return '#EF4444'; // Acidic -> Red
+            if (ph > 7.2) return '#2563EB'; // Basic -> Blue
+            return '#FBBF24'; // Neutral -> Original Yellow
+        }
+
+        function getSolutionLiquidColor(ph, isActive, conc) {
+            if (!isActive) return '#E0F2FE'; // Water light blue
+            if (ph < 3.0) return '#FECACA'; // Strong acid pastel red
+            if (ph < 6.8) return '#FED7AA'; // Weak acid soft orange
+            if (ph <= 7.2) return '#FEF08A'; // Neutral soft yellow
+            if (ph < 11.0) return '#E0F2FE'; // Weak base soft cyan
+            return '#BFDBFE'; // Strong base soft blue
+        }
+
+        function generateParticlesForSolution() {
+            particlesPool = [];
+            const canvas = document.getElementById('particlesCanvas');
+            if (!canvas) return;
+            const w = canvas.width;
+            const h = canvas.height;
+            const topMargin = h * 0.35;
+
+            const mat = SUBSTANCES[state.currentSubstanceKey] || SUBSTANCES['HCl'];
+            const alpha = state.calculated ? state.calculated.alpha : 1.0;
+
+            for (let i = 0; i < 18; i++) {
+                particlesPool.push({
+                    x: Math.random() * (w - 20) + 10,
+                    y: Math.random() * (h - topMargin - 20) + topMargin + 10,
+                    vx: (Math.random() - 0.5) * 0.6,
+                    vy: (Math.random() - 0.5) * 0.6,
+                    label: 'H₂O',
+                    bg: 'rgba(56, 189, 248, 0.4)',
+                    radius: 9
+                });
+            }
+
+            const isActive = (state.mode === 'ions') || state.isPoured;
+            if (!isActive) return;
+
+            let totalUnits = 14;
+            let ionizedUnits = Math.round(totalUnits * alpha);
+            if (mat.type.includes('weak') && ionizedUnits < 3) ionizedUnits = 3;
+            let unIonizedUnits = mat.neutralMol ? Math.max(0, totalUnits - ionizedUnits) : 0;
+
+            const cationLabel = (state.mode === 'ions') ? 'H⁺' : (mat.cations ? mat.cations[0] : 'H⁺');
+            const anionLabel = (state.mode === 'ions') ? 'OH⁻' : (mat.anions ? mat.anions[0] : 'OH⁻');
+
+            for (let i = 0; i < ionizedUnits; i++) {
+                particlesPool.push({
+                    x: Math.random() * (w - 20) + 10,
+                    y: Math.random() * (h - topMargin - 20) + topMargin + 10,
+                    vx: (Math.random() - 0.5) * 0.7,
+                    vy: (Math.random() - 0.5) * 0.7,
+                    label: cationLabel,
+                    bg: 'rgba(239, 68, 68, 0.85)',
+                    radius: 10
+                });
+                particlesPool.push({
+                    x: Math.random() * (w - 20) + 10,
+                    y: Math.random() * (h - topMargin - 20) + topMargin + 10,
+                    vx: (Math.random() - 0.5) * 0.7,
+                    vy: (Math.random() - 0.5) * 0.7,
+                    label: anionLabel,
+                    bg: 'rgba(59, 130, 246, 0.85)',
+                    radius: 10
+                });
+            }
+
+            if (mat.neutralMol && state.mode === 'substance') {
+                for (let i = 0; i < unIonizedUnits; i++) {
+                    particlesPool.push({
+                        x: Math.random() * (w - 20) + 10,
+                        y: Math.random() * (h - topMargin - 20) + topMargin + 10,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        label: mat.neutralMol,
+                        bg: 'rgba(245, 158, 11, 0.85)',
+                        radius: 11
+                    });
+                }
+            }
+        }
+
+        window.onload = function() {
+            populateSubstanceDropdowns();
+            initCanvasParticles();
+            syncIonControlsUI();
+            setupDraggableTools();
+            updateProbePositions();
+            updateAllCalculationsAndUI();
+            initQuiz();
+            initCompareChart();
+            updateGlobalScoreAndProgress();
+        };
+
+        // ENHANCED HIGH-PRECISION DRAG AND DROP ENGINE FOR LABORATORY TOOLS
+        function setupDraggableTools() {
+            const toolIds = ['phProbe', 'condProbe', 'indicatorStripTool'];
+            toolIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                let isDragging = false;
+                let pointerOffsetX = 0;
+                let pointerOffsetY = 0;
+
+                function onPointerDown(e) {
+                    // Accept primary touch or left-click
+                    if (e.button !== undefined && e.button !== 0) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    isDragging = true;
+                    el.classList.add('dragging');
+
+                    // Standardize tool container to beaker workspace while dragging
+                    const workspace = document.getElementById('beakerWorkspace');
+                    if (workspace && el.parentElement !== workspace) {
+                        const currentRect = el.getBoundingClientRect();
+                        const wsRect = workspace.getBoundingClientRect();
+                        workspace.appendChild(el);
+                        el.style.position = 'absolute';
+                        el.style.left = (currentRect.left - wsRect.left) + 'px';
+                        el.style.top = (currentRect.top - wsRect.top) + 'px';
+                    }
+
+                    const elRect = el.getBoundingClientRect();
+                    pointerOffsetX = e.clientX - elRect.left;
+                    pointerOffsetY = e.clientY - elRect.top;
+
+                    try {
+                        el.setPointerCapture(e.pointerId);
+                    } catch (err) {}
+
+                    el.addEventListener('pointermove', onPointerMove);
+                    el.addEventListener('pointerup', onPointerUp);
+                    el.addEventListener('pointercancel', onPointerUp);
+                }
+
+                function onPointerMove(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+
+                    const workspace = document.getElementById('beakerWorkspace');
+                    if (!workspace) return;
+                    const wsRect = workspace.getBoundingClientRect();
+
+                    let targetLeft = e.clientX - wsRect.left - pointerOffsetX;
+                    let targetTop = e.clientY - wsRect.top - pointerOffsetY;
+
+                    // Bound tool smoothly within beaker workspace area
+                    const maxLeft = wsRect.width - el.offsetWidth;
+                    const maxTop = wsRect.height - 40;
+                    targetLeft = Math.max(-20, Math.min(targetLeft, maxLeft + 20));
+                    targetTop = Math.max(-10, Math.min(targetTop, maxTop));
+
+                    el.style.left = targetLeft + 'px';
+                    el.style.top = targetTop + 'px';
+
+                    checkBeakerOverlap(el);
+                }
+
+                function onPointerUp(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    el.classList.remove('dragging');
+
+                    try {
+                        el.releasePointerCapture(e.pointerId);
+                    } catch (err) {}
+
+                    el.removeEventListener('pointermove', onPointerMove);
+                    el.removeEventListener('pointerup', onPointerUp);
+                    el.removeEventListener('pointercancel', onPointerUp);
+
+                    const probeType = (id === 'phProbe') ? 'ph' : ((id === 'condProbe') ? 'cond' : 'strip');
+                    const isOverBeaker = checkBeakerOverlap(el);
+
+                    state.probes[probeType] = isOverBeaker;
+                    updateProbePositions();
+                    updateAllCalculationsAndUI();
+                }
+
+                el.removeEventListener('pointerdown', onPointerDown);
+                el.addEventListener('pointerdown', onPointerDown);
+
+                // Quick tap / click to toggle probe immersion directly
+                el.onclick = function(e) {
+                    if (isDragging) return;
+                    const probeType = (id === 'phProbe') ? 'ph' : ((id === 'condProbe') ? 'cond' : 'strip');
+                    toggleProbeImmersion(probeType);
+                };
+            });
+        }
+
+        function checkBeakerOverlap(el) {
+            const beaker = document.getElementById('beakerElement');
+            if (!beaker || !el) return false;
+
+            const beakerRect = beaker.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+
+            // Calculate active center point of the tool tip
+            const tipX = elRect.left + elRect.width / 2;
+            const tipY = elRect.top + elRect.height * 0.75;
+
+            const isOver = (
+                tipX >= (beakerRect.left - 30) &&
+                tipX <= (beakerRect.right + 30) &&
+                tipY >= (beakerRect.top - 20) &&
+                tipY <= (beakerRect.bottom + 20)
+            );
+
+            if (isOver) beaker.classList.add('drag-over');
+            else beaker.classList.remove('drag-over');
+
+            return isOver;
+        }
+
+        function updateProbePositions() {
+            const phEl = document.getElementById('phProbe');
+            const condEl = document.getElementById('condProbe');
+            const stripEl = document.getElementById('indicatorStripTool');
+            const workspace = document.getElementById('beakerWorkspace');
+            const stCond = document.getElementById('stagingCond');
+            const stPh = document.getElementById('stagingPh');
+            const stStrip = document.getElementById('stagingStrip');
+
+            if (!workspace) return;
+            const wWidth = workspace.clientWidth;
+
+            // pH Probe positioning
+            if (phEl) {
+                if (state.probes.ph) {
+                    if (phEl.parentElement !== workspace) workspace.appendChild(phEl);
+                    phEl.style.position = 'absolute';
+                    phEl.style.left = (wWidth * 0.5 - phEl.offsetWidth / 2) + 'px';
+                    phEl.style.top = '105px';
+                } else if (stPh) {
+                    if (phEl.parentElement !== stPh) stPh.appendChild(phEl);
+                    phEl.style.position = 'relative';
+                    phEl.style.left = '0px';
+                    phEl.style.top = '0px';
+                }
+            }
+
+            // Conductivity Probe positioning
+            if (condEl) {
+                if (state.probes.cond) {
+                    if (condEl.parentElement !== workspace) workspace.appendChild(condEl);
+                    condEl.style.position = 'absolute';
+                    condEl.style.left = (wWidth * 0.65 - condEl.offsetWidth / 2) + 'px';
+                    condEl.style.top = '95px';
+                } else if (stCond) {
+                    if (condEl.parentElement !== stCond) stCond.appendChild(condEl);
+                    condEl.style.position = 'relative';
+                    condEl.style.left = '0px';
+                    condEl.style.top = '0px';
+                }
+            }
+
+            // Indicator Strip Tool positioning
+            if (stripEl) {
+                if (state.probes.strip) {
+                    if (stripEl.parentElement !== workspace) workspace.appendChild(stripEl);
+                    stripEl.style.position = 'absolute';
+                    stripEl.style.left = (wWidth * 0.35 - stripEl.offsetWidth / 2) + 'px';
+                    stripEl.style.top = '115px';
+                } else if (stStrip) {
+                    if (stripEl.parentElement !== stStrip) stStrip.appendChild(stripEl);
+                    stripEl.style.position = 'relative';
+                    stripEl.style.left = '0px';
+                    stripEl.style.top = '0px';
+                }
+            }
+
+            const beaker = document.getElementById('beakerElement');
+            if (beaker) beaker.classList.remove('drag-over');
+
+            updateToolMenuButtons();
+        }
+
+        function updateToolMenuButtons() {
+            // Helper function to update tool container active highlight state
+            const stPh = document.getElementById('stagingPh');
+            const stCond = document.getElementById('stagingCond');
+            const stStrip = document.getElementById('stagingStrip');
+
+            if (stPh) stPh.style.borderColor = state.probes.ph ? '#2563EB' : '';
+            if (stCond) stCond.style.borderColor = state.probes.cond ? '#2563EB' : '';
+            if (stStrip) stStrip.style.borderColor = state.probes.strip ? '#2563EB' : '';
+        }
+
+        function updateAllCalculationsAndUI() {
+            const mat = SUBSTANCES[state.currentSubstanceKey] || SUBSTANCES['HCl'];
+            const C = state.conc;
+
+            let h3o = 1.0e-7, oh = 1.0e-7, alpha = 1.0;
+
+            if (state.mode === 'substance') {
+                if (state.isPoured) {
+                    if (mat.type === 'acid_strong') { h3o = C; alpha = 1.0; }
+                    else if (mat.type === 'acid_weak') { h3o = Math.sqrt(mat.ka * C); alpha = h3o / C; }
+                    else if (mat.type === 'base_strong') { oh = C; h3o = 1.0e-14 / oh; alpha = 1.0; }
+                    else if (mat.type === 'base_weak') { oh = Math.sqrt(mat.kb * C); h3o = 1.0e-14 / oh; alpha = oh / C; }
+                    else { h3o = 1.0e-7; oh = 1.0e-7; alpha = 1.0; }
+                }
+            } else { // Ion Mode
+                h3o = state.customH;
+                oh = state.customOH;
+                alpha = 1.0;
+            }
+
+            if (h3o < 1e-14) h3o = 1e-14;
+            oh = 1.0e-14 / h3o;
+
+            let pH = -Math.log10(h3o);
+            if (pH < 0) pH = 0; if (pH > 14) pH = 14;
+            let pOH = 14 - pH;
+
+            let cond = 0;
+            const isActive = (state.mode === 'ions') || state.isPoured;
+            if (isActive) {
+                if (state.mode === 'substance') {
+                    if (mat.type.includes('strong')) cond = C * 420;
+                    else if (mat.type.includes('weak')) cond = Math.sqrt(C) * 35;
+                    else cond = 0.05;
+                } else {
+                    cond = (h3o + oh) * 2500;
+                }
+            }
+
+            state.calculated = { ph: pH, poh: pOH, h3o: h3o, oh: oh, condValue: cond, alpha: alpha };
+
+            // Safely update Equation & Explanation
+            const eqDisp = document.getElementById('equationDisplay');
+            if (eqDisp) eqDisp.innerText = state.isPoured ? mat.eq : "اختر المادة ثم اضغط على 'إضافة المادة وبدء التفاعل تلقائياً'";
+            const eqExp = document.getElementById('equationExplanation');
+            if (eqExp) eqExp.innerText = mat.desc;
+
+            // Safely update Live Readouts
+            const lPh = document.getElementById('livePhVal');
+            if (lPh) lPh.innerText = isActive ? pH.toFixed(2) : '7.00';
+            const lPoh = document.getElementById('livePohVal');
+            if (lPoh) lPoh.innerText = isActive ? pOH.toFixed(2) : '7.00';
+            const lH = document.getElementById('liveHConcVal');
+            if (lH) lH.innerText = formatScientificNotation(h3o);
+            const lOh = document.getElementById('liveOhConcVal');
+            if (lOh) lOh.innerText = formatScientificNotation(oh);
+
+            const fPh = document.getElementById('formulaDynamicPh');
+            if (fPh) fPh.innerText = isActive ? pH.toFixed(2) : '7.00';
+            const fPoh = document.getElementById('formulaDynamicPoh');
+            if (fPoh) fPoh.innerText = isActive ? pOH.toFixed(2) : '7.00';
+            const fSum = document.getElementById('formulaDynamicSum');
+            if (fSum) fSum.innerText = '14.00';
+
+            const phDisp = document.getElementById('phValueDisplay');
+            if (phDisp) phDisp.innerText = state.probes.ph ? pH.toFixed(2) : '--';
+            const pohDisp = document.getElementById('pohValueDisplay');
+            if (pohDisp) pohDisp.innerText = state.probes.ph ? pOH.toFixed(2) : '--';
+            const hConc = document.getElementById('h3oConcVal');
+            if (hConc) hConc.innerText = formatScientificNotation(h3o);
+            const ohConc = document.getElementById('ohConcVal');
+            if (ohConc) ohConc.innerText = formatScientificNotation(oh);
+            const alphaVal = document.getElementById('ionizationAlphaVal');
+            if (alphaVal) alphaVal.innerText = (alpha * 100).toFixed(2) + '%';
+
+            // Conductivity test ONLY active when probe is immersed
+            const condStatus = document.getElementById('condStatusBadge');
+            const condText = document.getElementById('condStateText');
+            const condDisp = document.getElementById('condValueDisplay');
+            const probeBulb = document.getElementById('probeBulbIcon');
+
+            if (probeBulb) probeBulb.classList.remove('bulb-lit-strong', 'bulb-lit-weak');
+
+            if (state.probes.cond && isActive) {
+                if (condStatus) {
+                    condStatus.innerText = 'مغموس بالشكل الصحيح';
+                    condStatus.className = 'text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold border border-amber-200';
+                }
+                if (condText) condText.innerText = cond > 15 ? 'توصيل قوي جداً (مرتفع)' : (cond > 0.5 ? 'توصيل ضعيف (جزئي)' : 'غير موصل');
+                if (condDisp) condDisp.innerText = 'mS ' + cond.toFixed(2);
+
+                if (cond > 15 && probeBulb) probeBulb.classList.add('bulb-lit-strong');
+                else if (cond > 0.5 && probeBulb) probeBulb.classList.add('bulb-lit-weak');
+            } else {
+                if (condStatus) {
+                    condStatus.innerText = 'غير مغموس';
+                    condStatus.className = 'text-[10px] bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full font-bold border border-slate-200';
+                }
+                if (condText) condText.innerText = 'أغمس المجس في المحلول';
+                if (condDisp) condDisp.innerText = 'mS 0.00';
+            }
+
+            // Update Beaker Liquid Volume Level and Liquid Color
+            const beakerLiquid = document.getElementById('beakerLiquid');
+            if (beakerLiquid) {
+                const liquidHeightPct = isActive ? Math.min(85, 30 + (state.vol / 1000) * 50) : 60;
+                beakerLiquid.style.height = liquidHeightPct + '%';
+                beakerLiquid.style.backgroundColor = getSolutionLiquidColor(pH, isActive, C);
+            }
+
+            // Update Solution Nature Badge
+            const natureBadge = document.getElementById('solutionNatureBadge');
+            if (natureBadge) {
+                if (!isActive) {
+                    natureBadge.innerText = 'ماء مقطر';
+                    natureBadge.className = 'text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold border border-amber-200';
+                } else if (pH < 6.8) {
+                    natureBadge.innerText = 'محلول حمضي';
+                    natureBadge.className = 'text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold border border-red-200';
+                } else if (pH > 7.2) {
+                    natureBadge.innerText = 'محلول قاعدي';
+                    natureBadge.className = 'text-[10px] bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-bold border border-blue-200';
+                } else {
+                    natureBadge.innerText = 'محلول متعادل';
+                    natureBadge.className = 'text-[10px] bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full font-bold border border-yellow-200';
+                }
+            }
+
+            // Update Water Explanation Box
+            const wbExp = document.getElementById('waterBalanceExplanation');
+            if (wbExp) {
+                if (isActive) {
+                    if (pH < 6.8) {
+                        wbExp.innerHTML = `<span class="text-rose-700">حالة حمضية:</span> يطغى تركيز الأيونات الحمضية <span class="formula font-bold text-rose-700" dir="ltr" style="unicode-bidi: isolate;">[H⁺] (${formatScientificNotation(h3o)})</span> على أيونات <span class="formula font-bold text-blue-700" dir="ltr" style="unicode-bidi: isolate;">[OH⁻] (${formatScientificNotation(oh)})</span>.`;
+                    } else if (pH > 7.2) {
+                        wbExp.innerHTML = `<span class="text-blue-700">حالة قاعدية:</span> يطغى تركيز الأيونات القاعدية <span class="formula font-bold text-blue-700" dir="ltr" style="unicode-bidi: isolate;">[OH⁻] (${formatScientificNotation(oh)})</span> على أيونات <span class="formula font-bold text-rose-700" dir="ltr" style="unicode-bidi: isolate;">[H⁺] (${formatScientificNotation(h3o)})</span>.`;
+                    } else {
+                        wbExp.innerHTML = `<span class="text-emerald-700">حالة متعادلة:</span> تتساوى تراكيز الأيونات الحمضية والقاعدية تماماً عند <span class="formula font-bold text-emerald-800" dir="ltr" style="unicode-bidi: isolate;">[H⁺] = [OH⁻] = 1.0 × 10⁻⁷ mol/L</span>.`;
+                    }
+                } else {
+                    wbExp.innerHTML = `<span class="text-emerald-700">حالة متعادلة:</span> تتساوى تراكيز الأيونات الحمضية والقاعدية تماماً عند <span class="formula font-bold text-emerald-800" dir="ltr" style="unicode-bidi: isolate;">[H⁺] = [OH⁻] = 1.0 × 10⁻⁷ mol/L</span>.`;
+                }
+            }
+
+            // Update Indicator Strip Color & Label
+            const stripTip = document.getElementById('stripTipColor');
+            const stripBox = document.getElementById('indicatorColorBox');
+            const stripStatusLbl = document.getElementById('stripStatusLabelText');
+            const stripStateTag = document.getElementById('stripStateLabel');
+
+            if (state.probes.strip && isActive && stripTip && stripStatusLbl) {
+                let color = getIndicatorColor(pH);
+                stripTip.style.backgroundColor = color;
+                if (stripBox) stripBox.style.backgroundColor = color;
+
+                if (pH < 6.8) {
+                    if (stripStateTag) {
+                        stripStateTag.innerText = 'أحمر (وسط حمضي)';
+                        stripStateTag.className = 'text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold border border-red-200';
+                    }
+                    stripStatusLbl.innerText = 'أحمر (وسط حمضي - pH < 7)';
+                    stripStatusLbl.className = 'text-[11px] font-bold text-rose-600';
+                } else if (pH > 7.2) {
+                    if (stripStateTag) {
+                        stripStateTag.innerText = 'أزرق (وسط قاعدي)';
+                        stripStateTag.className = 'text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold border border-blue-200';
+                    }
+                    stripStatusLbl.innerText = 'أزرق (وسط قاعدي - pH > 7)';
+                    stripStatusLbl.className = 'text-[11px] font-bold text-blue-600';
+                } else {
+                    if (stripStateTag) {
+                        stripStateTag.innerText = 'أصفر الأصلي (وسط متعادل)';
+                        stripStateTag.className = 'text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200';
+                    }
+                    stripStatusLbl.innerText = 'أصفر الأصلي (وسط متعادل - pH = 7)';
+                    stripStatusLbl.className = 'text-[11px] font-bold text-amber-700';
+                }
+            } else if (stripTip && stripStatusLbl) {
+                stripTip.style.backgroundColor = '#FBBF24'; // Initial Yellow state
+                if (stripBox) stripBox.style.backgroundColor = '#FBBF24';
+                if (stripStateTag) {
+                    stripStateTag.innerText = 'أصفر الأصلي (قبل الاختبار)';
+                    stripStateTag.className = 'text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200';
+                }
+                stripStatusLbl.innerText = 'أصفر الأصلي (قبل الاختبار)';
+                stripStatusLbl.className = 'text-[11px] font-normal text-slate-500';
+            }
+
+            // Update pH Scale Pointer
+            const pointer = document.getElementById('phSpectrumPointer');
+            if (pointer) pointer.style.left = ((Math.max(0, Math.min(14, pH)) / 14) * 100).toFixed(2) + '%';
+
+            // Particle legend update
+            updateParticleLegend(mat);
+            generateParticlesForSolution();
+        }
+
+        function updateParticleLegend(mat) {
+            const legend = document.getElementById('particleLegendBox');
+            if(!legend) return;
+            const isActive = (state.mode === 'ions') || state.isPoured;
+            if (!isActive) {
+                legend.innerHTML = `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> جزيئات الماء (H₂O)</span>`;
+                return;
+            }
+
+            let cationName = (state.mode === 'ions') ? 'H⁺' : (mat.cations ? mat.cations[0] : 'H⁺');
+            let anionName = (state.mode === 'ions') ? 'OH⁻' : (mat.anions ? mat.anions[0] : 'OH⁻');
+
+            let itemsHTML = `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> جزيئات الماء (H₂O)</span>`;
+            itemsHTML += `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> الأيونات الموجبة (${cationName})</span>`;
+            itemsHTML += `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> الأيونات السالبة (${anionName})</span>`;
+
+            if (mat.neutralMol && state.mode === 'substance') {
+                itemsHTML += `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> جزيئات غير متأينة (${mat.neutralMol})</span>`;
+            }
+
+            legend.innerHTML = itemsHTML;
+        }
+
+        function initCanvasParticles() {
+            const canvas = document.getElementById('particlesCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            function resize() { 
+                if (canvas && canvas.parentElement) {
+                    canvas.width = canvas.parentElement.clientWidth; 
+                    canvas.height = canvas.parentElement.clientHeight; 
+                    generateParticlesForSolution(); 
+                }
+            }
+            resize();
+            window.addEventListener('resize', resize);
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const topM = canvas.height * 0.35;
+                particlesPool.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x - p.radius < 2 || p.x + p.radius > canvas.width - 2) p.vx *= -1;
+                    if (p.y - p.radius < topM || p.y + p.radius > canvas.height - 2) p.vy *= -1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.bg; ctx.fill();
+                    ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 8px Cairo'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(p.label, p.x, p.y);
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // SAVED EXPERIMENTS
+        function saveLabExperiment() {
+            const mat = SUBSTANCES[state.currentSubstanceKey];
+            const name = state.mode === 'substance' ? mat.name : `تحكم بالأيونات ([H⁺]=${state.customH.toExponential(1)})`;
+            state.savedExperiments.push({ name: name, conc: state.conc, ph: state.calculated.ph, cond: state.calculated.condValue });
+            const badge = document.getElementById('compare-badge');
+            if (badge) badge.innerText = state.savedExperiments.length;
+            renderSavedExperiments(); updateCompareChart();
+        }
+
+        function clearSavedLabs() {
+            state.savedExperiments = []; 
+            const badge = document.getElementById('compare-badge');
+            if (badge) badge.innerText = '0';
+            renderSavedExperiments(); updateCompareChart();
+        }
+
+        function renderSavedExperiments() {
+            const grid = document.getElementById('savedLabsGrid');
+            if(!grid) return; grid.innerHTML = '';
+            if (state.savedExperiments.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-4 text-xs text-slate-400 font-bold">لا توجد تجارب محفوظة بعد.</div>`; return;
+            }
+            state.savedExperiments.forEach(exp => {
+                grid.innerHTML += `<div class="bg-slate-50 p-3 rounded-xl border text-xs space-y-1"><div class="font-bold">${exp.name}</div><div>pH: ${exp.ph.toFixed(2)}</div><div>التوصيل: ${exp.cond.toFixed(2)} mS</div></div>`;
+            });
+        }
+
+        function initCompareChart() {
+            const canvasEl = document.getElementById('compareCanvasChart');
+            if (!canvasEl) return;
+            compareChartInstance = new Chart(canvasEl.getContext('2d'), {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'pH', data: [], backgroundColor: '#8B5CF6' }, { label: 'التوصيل (mS)', data: [], backgroundColor: '#F59E0B' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateCompareChart() {
+            if (!compareChartInstance) return;
+            compareChartInstance.data.labels = state.savedExperiments.map(e => e.name.split('(')[0]);
+            compareChartInstance.data.datasets[0].data = state.savedExperiments.map(e => e.ph);
+            compareChartInstance.data.datasets[1].data = state.savedExperiments.map(e => e.cond);
+            compareChartInstance.update();
+        }
+
+        // QUIZ ENGINE WITH EXACTLY 10 UNIQUE QUESTIONS (NO DUPLICATE Kw QUESTIONS)
+        const FIXED_QUIZ_QUESTIONS = [
+            {
+                q: "1) لماذا تكون محاليل الأحماض القوية جيدة التوصيل للكهرباء؟",
+                opts: [
+                    "أ) لأنها تحتوي على جزيئات غير متأينة فقط.",
+                    "ب) لأنها تحتوي على عدد كبير من الأيونات حرّة الحركة.",
+                    "ج) لأنها لا تتفاعل مع الماء.",
+                    "د) لأنها لا تحتوي على أيونات سالبة."
+                ],
+                ans: 1,
+                exp: "تتأين الأحماض القوية كلياً في الماء منتجة تركيزاً عالياً جداً من الأيونات الحرة الحركة مما يجعلها جيدة التوصيل للكهرباء."
+            },
+            {
+                q: "2) إذا كانت قيمة pH لمحلول تساوي 3.00، فإن تركيز أيونات الهيدروجين [H⁺] يساوي:",
+                opts: [
+                    "أ) 1.0 × 10⁻³ M",
+                    "ب) 1.0 × 10⁻⁷ M",
+                    "ج) 1.0 × 10⁻¹¹ M",
+                    "د) 3.0 M"
+                ],
+                ans: 0,
+                exp: "[H⁺] = 10⁻ᵖᴴ = 10⁻³ M = 1.0 × 10⁻³ M."
+            },
+            {
+                q: "3) تتميز القواعد القوية بإنتاجها لتركيز مرتفع من أيونات:",
+                opts: [
+                    "أ) Cl⁻",
+                    "ب) H⁺",
+                    "ج) Na⁺",
+                    "د) OH⁻"
+                ],
+                ans: 3,
+                exp: "تتفكك القواعد القوية كليًا في الماء مطلقة أيونات الهيدروكسيد OH⁻."
+            },
+            {
+                q: "4) ماذا يمثل ثابت تأين الحمض الضعيف (Ka)؟",
+                opts: [
+                    "أ) درجة غليان الحمض.",
+                    "ب) ثابت الاتزان لتأين الحمض في الماء.",
+                    "ج) حجم المحلول الكلي.",
+                    "د) كتلة الحمض المذابة."
+                ],
+                ans: 1,
+                exp: "ثابت تأين الحمض (Ka) يُعبر عن قيمة ثابت الاتزان الكيميائي لتأين الحمض الضعيف في الوسط المائي."
+            },
+            {
+                q: "5) في المحلول المتعادل عند درجة حرارة 25°C، تكون قيمة [H⁺] مساوية لـ:",
+                opts: [
+                    "أ) 1.0 M",
+                    "ب) 1.0 × 10⁻⁷ M",
+                    "ج) 1.0 × 10⁻¹⁴ M",
+                    "د) 0.0 M"
+                ],
+                ans: 1,
+                exp: "في الوسط المتعادل عند 25°C تتساوى تراكيز الأيونين [H⁺] = [OH⁻] = 1.0 × 10⁻⁷ M."
+            },
+            {
+                q: "6) ما العلاقة الرياضية التي تربط بين pH و pOH عند درجة حرارة 25°C؟",
+                opts: [
+                    "أ) pH ÷ pOH = 1",
+                    "ب) pH × pOH = 14",
+                    "ج) pH + pOH = 14",
+                    "د) pH − pOH = 7"
+                ],
+                ans: 2,
+                exp: "العلاقة الأساسية المباشرة هي pH + pOH = 14 عند درجة حرارة 25°C."
+            },
+            {
+                q: "7) أي المواد الآتية تُعد مثالاً على حمض ضعيف يتأين جزئياً؟",
+                opts: [
+                    "أ) CH₃COOH",
+                    "ب) HCl",
+                    "ج) HNO₃",
+                    "د) HBr"
+                ],
+                ans: 0,
+                exp: "حمض الأسيتيك CH₃COOH هو حمض عضوي ضعيف يتأين جزئياً ويكون اتزاناً كيميائياً."
+            },
+            {
+                q: "8) أي المواد الآتية يُعد مثالاً على قاعدة ضعيفة؟",
+                opts: [
+                    "أ) LiOH",
+                    "ب) NaOH",
+                    "ج) KOH",
+                    "د) NH₃"
+                ],
+                ans: 3,
+                exp: "الأمونيا NH₃ من أشهر الأمثلة على القواعد الضعيفة التي تتفاعل جزئياً مع الماء."
+            },
+            {
+                q: "9) أي المعادلات الكيميائية الآتية تمثل تأين حمض الهيدروكلوريك في الماء؟",
+                opts: [
+                    "أ) HCl → H₂ + Cl₂",
+                    "ب) HCl → H⁺ + OH⁻",
+                    "ج) HCl + H₂O → H₃O⁺ + Cl⁻",
+                    "د) HCl + OH⁻ → H₂O"
+                ],
+                ans: 2,
+                exp: "يتفاعل HCl التام مع الماء ليعطي أيون الهيدرونيوم H₃O⁺ وأيون الكلوريد Cl⁻."
+            },
+            {
+                q: "10) ما الناتج المباشر المعتاد لتفاعل التعادل بين حمض وقاعدة؟",
+                opts: [
+                    "أ) ملح وماء.",
+                    "ب) حمض وفلز دائماً.",
+                    "ج) غاز أكسجين وماء.",
+                    "د) قاعدة قوية فقط."
+                ],
+                ans: 0,
+                exp: "تفاعل التعادل بين الحمض والقاعدة ينتج دائماً الملح والماء."
+            }
+        ];
+
+        let quizQuestions = [];
+        let quizState = { idx: 0, score: 0, answeredCurrent: false };
+
+        function initQuiz() {
+            quizQuestions = JSON.parse(JSON.stringify(FIXED_QUIZ_QUESTIONS));
+
+            quizState = { idx: 0, score: 0, answeredCurrent: false };
+            const qScore = document.getElementById('quizScoreDisplay');
+            if (qScore) qScore.innerText = '0';
+            const qTot = document.getElementById('quizTotalDisplay');
+            if (qTot) qTot.innerText = '10';
+
+            const mainContainer = document.getElementById('quizMainContainer');
+            const resultBox = document.getElementById('quizFinalResultBox');
+            if (mainContainer) mainContainer.classList.remove('hidden');
+            if (resultBox) {
+                resultBox.classList.add('hidden');
+                resultBox.innerHTML = '';
+            }
+
+            renderQuizQuestion();
+        }
+
+        function resetQuiz() { initQuiz(); }
+
+        function renderQuizQuestion() {
+            quizState.answeredCurrent = false;
+            const q = quizQuestions[quizState.idx];
+            const numDisp = document.getElementById('quizNumDisplay');
+            if (numDisp) numDisp.innerText = `السؤال ${quizState.idx + 1} / 10`;
+            const pBar = document.getElementById('quizProgressBar');
+            if (pBar) pBar.style.width = ((quizState.idx + 1) / 10 * 100) + '%';
+            const qText = document.getElementById('quizQuestionText');
+            if (qText) qText.innerText = q.q;
+
+            const optsBox = document.getElementById('quizOptionsContainer'); 
+            if (optsBox) {
+                optsBox.innerHTML = '';
+                q.opts.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-opt-btn w-full text-right p-3 rounded-xl border border-slate-200 hover:bg-emerald-50 text-xs font-bold transition flex items-center justify-between';
+                    btn.innerHTML = `<span>${opt}</span><i class="fa-regular fa-circle text-slate-300 text-sm"></i>`;
+                    btn.onclick = () => handleQuizAnswer(i);
+                    optsBox.appendChild(btn);
+                });
+            }
+
+            const fb = document.getElementById('quizFeedbackBox');
+            if (fb) fb.classList.add('hidden');
+            const nxt = document.getElementById('quizNextBtn');
+            if (nxt) nxt.classList.add('hidden');
+        }
+
+        function handleQuizAnswer(chosen) {
+            if (quizState.answeredCurrent) return;
+            quizState.answeredCurrent = true;
+            const q = quizQuestions[quizState.idx];
+            const isCorrect = (chosen === q.ans);
+            
+            document.querySelectorAll('.quiz-opt-btn').forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.ans) {
+                    btn.className = 'quiz-opt-btn w-full text-right p-3 rounded-xl border border-emerald-500 bg-emerald-100 text-emerald-950 text-xs font-bold transition flex items-center justify-between';
+                    btn.innerHTML = `<span>${q.opts[idx]}</span><i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>`;
+                } else if (idx === chosen) {
+                    btn.className = 'quiz-opt-btn w-full text-right p-3 rounded-xl border border-rose-500 bg-rose-100 text-rose-950 text-xs font-bold transition flex items-center justify-between';
+                    btn.innerHTML = `<span>${q.opts[idx]}</span><i class="fa-solid fa-circle-xmark text-rose-600 text-base"></i>`;
+                }
+            });
+
+            if (isCorrect) quizState.score++;
+            const qScore = document.getElementById('quizScoreDisplay');
+            if (qScore) qScore.innerText = quizState.score;
+
+            const fb = document.getElementById('quizFeedbackBox'); 
+            if (fb) {
+                fb.classList.remove('hidden');
+                if (isCorrect) {
+                    fb.className = 'rounded-xl p-3.5 text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-1';
+                    fb.innerHTML = `<div class="font-extrabold flex items-center gap-1.5"><i class="fa-solid fa-check-circle text-emerald-600"></i> إجابة صحيحة!</div><p class="leading-relaxed font-semibold">${q.exp}</p>`;
+                } else {
+                    fb.className = 'rounded-xl p-3.5 text-xs bg-rose-50 border border-rose-200 text-rose-900 space-y-1';
+                    fb.innerHTML = `<div class="font-extrabold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark text-rose-600"></i> إجابة خاطئة!</div><p class="leading-relaxed font-semibold">${q.exp}</p>`;
+                }
+            }
+
+            const nxt = document.getElementById('quizNextBtn');
+            if (nxt) {
+                nxt.classList.remove('hidden');
+                nxt.innerText = (quizState.idx === 9) ? 'عرض النتيجة النهائية' : 'السؤال التالي';
+            }
+        }
+
+        function nextQuizQuestion() {
+            if (quizState.idx + 1 < 10) { 
+                quizState.idx++; 
+                renderQuizQuestion(); 
+            } else { 
+                displayQuizFinalResults(); 
+            }
+        }
+
+        function displayQuizFinalResults() {
+            const mainC = document.getElementById('quizMainContainer');
+            const resultBox = document.getElementById('quizFinalResultBox');
+            if (mainC) mainC.classList.add('hidden');
+
+            if (!resultBox) return;
+            resultBox.classList.remove('hidden');
+
+            const score = quizState.score;
+
+            let heading = "";
+            let encouragingMessage = "";
+
+            if (score >= 9) {
+                heading = "درجة رائعة! 🌟";
+                encouragingMessage = "إبداعكِ واضح، وإجاباتكِ تدل على فهمكِ المميز للكيمياء. استمري في التألق، فالمزيد من الإنجازات بانتظاركِ! 💚";
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } else if (score === 8) {
+                heading = "أداء جميل! ✨";
+                encouragingMessage = "أنتِ على الطريق الصحيح! بقيت خطوات بسيطة للوصول إلى التميّز، واصلي المحاولة والتعلّم. 💚";
+            } else {
+                heading = "أحسنتِ! 🌷";
+                encouragingMessage = "كل محاولة تقرّبكِ من النجاح، والخطأ فرصة للتعلّم. ثقي بقدراتكِ، وراجعي ما تعلّمتِه، وستحققيقين تقدّمًا أجمل في المرة القادمة! 💪";
+            }
+
+            resultBox.innerHTML = `
+                <div class="panel-card p-6 border bg-gradient-to-b from-emerald-50 via-white to-slate-50 border-emerald-200 text-center space-y-4 animate-pop shadow-lg">
+                    <h2 class="text-2xl font-black text-slate-800">${heading}</h2>
+                    
+                    <div class="bg-white/90 backdrop-blur border border-emerald-200 rounded-2xl p-4 max-w-sm mx-auto shadow-sm">
+                        <div class="text-xs text-slate-500 font-bold mb-1">النتيجة النهائية:</div>
+                        <div class="text-3xl font-black text-emerald-700 font-mono">${score} / 10</div>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-slate-700 font-bold max-w-lg mx-auto leading-relaxed bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
+                        ${encouragingMessage}
+                    </p>
+
+                    <div class="pt-3">
+                        <button onclick="resetQuiz()" class="bg-emeraldPrimary hover:bg-emeraldHover text-white px-6 py-2.5 rounded-xl text-xs font-extrabold shadow-md transition flex items-center justify-center gap-2 mx-auto">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة الاختبار
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // SHARED PROGRESS AND UNIFIED SCORING MANAGEMENT
+        function setDifficulty(level) {
+            gameDifficulty = level;
+            ['Easy', 'Medium', 'Hard'].forEach(l => {
+                const b = document.getElementById('diffBtn' + l);
+                if (b) {
+                    if (l.toLowerCase() === level) b.className = 'px-3 py-1 rounded-lg border bg-sky-600 text-white border-sky-600 transition';
+                    else b.className = 'px-3 py-1 rounded-lg border bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200 transition';
+                }
+            });
+            if (activeGameType) initGameLogic(activeGameType);
+        }
+
+        function registerGameScore(gameKey, scoreEarned) {
+            gamesData[gameKey].completed = true;
+            gamesData[gameKey].score = Math.max(gamesData[gameKey].score, Math.min(100, scoreEarned));
+            updateGlobalScoreAndProgress();
+        }
+
+        function updateGlobalScoreAndProgress() {
+            let totalEarned = 0;
+            let completedCount = 0;
+
+            const segKeys = ['unknown', 'neutralization', 'detective', 'ph_scale', 'ions_secret', 'ion_lab'];
+            const segColors = ['bg-cyan-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-amber-500'];
+
+            segKeys.forEach((key, idx) => {
+                const g = gamesData[key];
+                totalEarned += g.score;
+                const segEl = document.getElementById(`progSeg${idx + 1}`);
+                if (g.completed) {
+                    completedCount++;
+                    if(segEl) segEl.className = `h-full rounded-md ${segColors[idx]} transition-colors duration-500 shadow-sm`;
+                } else {
+                    if(segEl) segEl.className = 'h-full rounded-md bg-slate-200 transition-colors duration-500';
+                }
+            });
+
+            const maxPossible = 600;
+            const percentage = Math.round((totalEarned / maxPossible) * 100);
+
+            const totScoreEl = document.getElementById('globalTotalScoreDisplay');
+            if (totScoreEl) totScoreEl.innerText = `${totalEarned} / ${maxPossible} (${percentage}%)`;
+            
+            const progCounterEl = document.getElementById('globalProgressCounter');
+            if (progCounterEl) progCounterEl.innerText = `اكتملت ${completedCount} من 6 تحديات`;
+
+            // AUTOMATIC ACHIEVEMENT TITLE RULE
+            let titleText = 'كيميائية مبتدئة';
+            if (percentage === 100) titleText = 'خبيرة الكيمياء';
+            else if (percentage >= 75) titleText = 'كيميائية متمكنة';
+
+            const levelTitleBadge = document.getElementById('globalLevelTitleBadge');
+            if (levelTitleBadge) levelTitleBadge.innerText = titleText;
+
+            // HIGHLIGHT TITLE CARDS
+            ['Beg', 'Mid', 'Exp'].forEach(c => {
+                const el = document.getElementById('titleCard' + c);
+                if (el) el.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50', 'ring-amber-500', 'bg-amber-50', 'ring-blue-500', 'bg-blue-50');
+            });
+            
+            if (percentage === 100) {
+                const expEl = document.getElementById('titleCardExp');
+                if (expEl) expEl.classList.add('ring-2', 'ring-amber-500', 'bg-amber-50');
+            } else if (percentage >= 75) {
+                const midEl = document.getElementById('titleCardMid');
+                if (midEl) midEl.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+            } else {
+                const begEl = document.getElementById('titleCardBeg');
+                if (begEl) begEl.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+            }
+
+            // CERTIFICATE AVAILABILITY
+            const certBtn = document.getElementById('btnOpenCertificate');
+            const certMsg = document.getElementById('certStatusMsg');
+
+            if (certBtn && certMsg) {
+                if (completedCount === 6) {
+                    certBtn.disabled = false;
+                    certBtn.className = 'bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 mx-auto';
+                    certMsg.innerText = '✨ تهانينا! أكملتِ جميع التحديات بنجاح، يمكنكِ الآن استخراج شهادة الإنجاز.';
+                } else {
+                    certBtn.disabled = true;
+                    certBtn.className = 'bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-xl text-xs transition cursor-not-allowed mx-auto';
+                    certMsg.innerText = `أكملي جميع الألعاب الست (أكملتِ ${completedCount} من 6) لإصدار الشهادة الرسمية.`;
+                }
+            }
+
+            const certTitle = document.getElementById('certTitleVal');
+            if (certTitle) certTitle.innerText = titleText;
+            const certScore = document.getElementById('certScoreVal');
+            if (certScore) certScore.innerText = `${totalEarned} / 600`;
+            const certPercent = document.getElementById('certPercentVal');
+            if (certPercent) certPercent.innerText = `${percentage}%`;
+        }
+
+        function openCertificateModal() { 
+            const certModal = document.getElementById('certificateModal');
+            if (certModal) certModal.classList.remove('hidden'); 
+        }
+        
+        function closeCertificateModal() { 
+            const certModal = document.getElementById('certificateModal');
+            if (certModal) certModal.classList.add('hidden'); 
+        }
+
+        // GAME WORKSPACE ENGINE
+        function startInteractiveGame(gameKey) {
+            activeGameType = gameKey;
+            activeGameScore = gamesData[gameKey].score;
+
+            const menuEl = document.getElementById('challenge-selection-menu');
+            if (menuEl) menuEl.classList.add('hidden');
+            const workspaceEl = document.getElementById('game-workspace-container');
+            if (workspaceEl) workspaceEl.classList.remove('hidden');
+
+            const titles = {
+                'unknown': '1. لعبة المحاليل المجهولة',
+                'neutralization': '2. مهمة التعادل الكيميائي',
+                'detective': '3. المحققة الكيميائية',
+                'ph_scale': '4. تحدي مقياس الرقم الهيدروجيني',
+                'ions_secret': '5. لعبة سر الأيونات',
+                'ion_lab': '6. تحدي مختبر الأيونات'
+            };
+
+            const headerEl = document.getElementById('gameTitleHeader');
+            if (headerEl) headerEl.innerText = titles[gameKey];
+            const scoreDispEl = document.getElementById('gameScoreDisplay');
+            if (scoreDispEl) scoreDispEl.innerText = `النقاط: ${activeGameScore}`;
+            initGameLogic(gameKey);
+        }
+
+        function exitGameToMenu() {
+            const workspaceEl = document.getElementById('game-workspace-container');
+            if (workspaceEl) workspaceEl.classList.add('hidden');
+            const menuEl = document.getElementById('challenge-selection-menu');
+            if (menuEl) menuEl.classList.remove('hidden');
+        }
+
+        function restartActiveGame() { if (activeGameType) startInteractiveGame(activeGameType); }
+
+        function updateGameScore(pts) {
+            activeGameScore = Math.min(100, activeGameScore + pts);
+            const scoreDispEl = document.getElementById('gameScoreDisplay');
+            if (scoreDispEl) scoreDispEl.innerText = `النقاط: ${activeGameScore}`;
+            registerGameScore(activeGameType, activeGameScore);
+        }
+
+        function initGameLogic(gameKey) {
+            const container = document.getElementById('gameplayDynamicArea');
+            if (!container) return;
+            container.innerHTML = '';
+            switch (gameKey) {
+                case 'unknown': renderGame1_UnknownSolutions(container); break;
+                case 'neutralization': renderGame2_NeutralizationMission(container); break;
+                case 'detective': renderGame3_ChemicalDetective(container); break;
+                case 'ph_scale': renderGame4_PhScaleChallenge(container); break;
+                case 'ions_secret': renderGame5_IonsSecret(container); break;
+                case 'ion_lab': renderGame6_IonLabChallenge(container); break;
+            }
+        }
+
+        // GAME 1: المحاليل المجهولة
+        let g1_beakers = [
+            { id: 1, name: 'الكأس (أ)', ph: 1.5, type: 'acid_strong', tested: false, guessed: null },
+            { id: 2, name: 'الكأس (ب)', ph: 5.2, type: 'acid_weak', tested: false, guessed: null },
+            { id: 3, name: 'الكأس (ج)', ph: 7.0, type: 'neutral', tested: false, guessed: null },
+            { id: 4, name: 'الكأس (د)', ph: 12.8, type: 'base_strong', tested: false, guessed: null }
+        ];
+        let g1_selected = 0;
+
+        function renderGame1_UnknownSolutions(container) {
+            g1_beakers.forEach(b => { b.tested = false; b.guessed = null; });
+            g1_selected = 0;
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-cyan-50 p-3.5 rounded-xl border border-cyan-200 text-xs text-cyan-900 font-semibold">
+                        مستوى الصعوبة: <span class="font-bold">${gameDifficulty === 'easy' ? 'مبتدئة' : (gameDifficulty === 'medium' ? 'متمكنة' : 'خبيرة')}</span>. افحصي الكؤوس الأربعة وحددي صفتها الكيميائية.
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="g1BeakerGrid"></div>
+                    <div id="g1InspectorBox" class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-3"></div>
+                </div>
+            `;
+            g1_renderBeakerList(); g1_renderInspector();
+        }
+
+        function g1_renderBeakerList() {
+            const grid = document.getElementById('g1BeakerGrid'); 
+            if (!grid) return;
+            grid.innerHTML = '';
+            g1_beakers.forEach((b, idx) => {
+                let statusText = b.guessed ? `تصنيف: ${b.guessed === 'acid_strong' ? 'حمض قوي' : (b.guessed === 'acid_weak' ? 'حمض ضعيف' : (b.guessed === 'neutral' ? 'متعادل' : 'قاعدة قوية'))}` : (b.tested ? `pH: ${b.ph}` : 'مجهول الفحص');
+                grid.innerHTML += `
+                    <div onclick="g1_selected=${idx}; g1_renderInspector(); g1_renderBeakerList();" class="p-3 rounded-2xl border ${g1_selected === idx ? 'border-cyan-500 bg-cyan-50/50 ring-2 ring-cyan-400' : 'border-slate-200 bg-white'} cursor-pointer transition text-center space-y-2">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-sm"><i class="fa-solid fa-flask"></i></div>
+                        <div class="font-bold text-slate-800 text-xs">${b.name}</div>
+                        <div class="text-[10px] text-slate-500 font-mono">${statusText}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function g1_renderInspector() {
+            const b = g1_beakers[g1_selected];
+            const box = document.getElementById('g1InspectorBox');
+            if (!box) return;
+            box.innerHTML = `
+                <div class="flex items-center justify-between border-b pb-2"><span class="font-bold text-slate-800">فحص: ${b.name}</span></div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-white p-2.5 rounded-xl border"><div class="text-[10px] text-slate-400">قراءة pH</div><div class="text-base font-black ph-number">${b.tested ? b.ph.toFixed(2) : '--.--'}</div></div>
+                    <div class="bg-white p-2.5 rounded-xl border"><div class="text-[10px] text-slate-400">اختبار الكاشف</div><div class="w-6 h-5 mx-auto mt-1 rounded" style="background-color: ${b.tested ? (b.ph<6.5?'#FCA5A5':(b.ph>7.5?'#93C5FD':'#FEF08A')) : '#FBBF24'}"></div></div>
+                    <button onclick="g1_beakers[${g1_selected}].tested=true; g1_renderInspector(); g1_renderBeakerList();" class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs">فحص الآن</button>
+                </div>
+                <div class="${b.tested ? '' : 'hidden'} pt-2 border-t space-y-2">
+                    <div class="text-xs font-bold text-slate-700">تصنيف المحلول:</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button onclick="g1_classify('acid_strong')" class="py-1.5 bg-red-100 text-red-800 rounded-lg text-xs font-bold">حمض قوي</button>
+                        <button onclick="g1_classify('acid_weak')" class="py-1.5 bg-orange-100 text-orange-800 rounded-lg text-xs font-bold">حمض ضعيف</button>
+                        <button onclick="g1_classify('neutral')" class="py-1.5 bg-yellow-100 text-yellow-800 rounded-lg text-xs font-bold">متعادل</button>
+                        <button onclick="g1_classify('base_strong')" class="py-1.5 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold">قاعدة قوية</button>
+                    </div>
+                </div>
+                <div id="g1Msg" class="text-xs font-bold"></div>
+            `;
+        }
+
+        function g1_classify(type) {
+            let b = g1_beakers[g1_selected];
+            if (b.guessed !== null) return;
+            b.guessed = type;
+            const msg = document.getElementById('g1Msg');
+            if (msg) {
+                if (b.guessed === b.type) {
+                    updateGameScore(25);
+                    msg.innerHTML = `<span class="text-emerald-700">✨ إجابة صحيحة! (+25 نقطة)</span>`;
+                } else {
+                    msg.innerHTML = `<span class="text-rose-700">إجابة غير دقيقة، راجعي قيمة pH.</span>`;
+                }
+            }
+            g1_renderBeakerList();
+        }
+
+        // GAME 2: مهمة التعادل الكيميائي
+        let g2_acidVol = 50, g2_addedBase = 0, g2_completed = false;
+        function renderGame2_NeutralizationMission(container) {
+            g2_acidVol = 50; g2_addedBase = 0; g2_completed = false;
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-xs text-purple-900 font-semibold">
+                        أضيفي المحلول القاعدي لتعديل الحمض والوصول لنقطة التعادل التام (pH = 7.00).
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <div class="bg-white p-4 rounded-2xl border text-center space-y-2">
+                            <div class="text-xs font-bold text-slate-700">الكأس الكيميائي</div>
+                            <div class="w-20 h-28 mx-auto rounded-b-2xl border-2 border-slate-300 relative overflow-hidden bg-slate-50">
+                                <div id="g2Liquid" class="absolute bottom-0 w-full transition-all" style="height: 60%; background-color: #FCA5A5;"></div>
+                            </div>
+                            <div class="text-xs font-mono font-bold">القاعدة المضافة: <span id="g2BaseVolDisp">0</span> mL</div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-slate-50 p-3 rounded-xl border text-center font-mono"><div class="text-xs text-slate-500">pH</div><div id="g2PhDisp" class="text-2xl ph-number">1.30</div></div>
+                            <div class="flex gap-2">
+                                <button onclick="g2_addDrops(1)" class="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-bold">+1 mL</button>
+                                <button onclick="g2_addDrops(5)" class="flex-1 bg-purple-700 text-white py-2 rounded-xl text-xs font-bold">+5 mL</button>
+                            </div>
+                            <button onclick="renderGame2_NeutralizationMission(document.getElementById('gameplayDynamicArea'))" class="w-full bg-slate-100 py-1.5 rounded-xl text-xs font-bold">إعادة الضبط</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function g2_addDrops(amt) {
+            if (g2_completed) return;
+            g2_addedBase += amt;
+            let netH = 5 - (g2_addedBase * 0.1);
+            let totalVol = 50 + g2_addedBase;
+            let pH = netH > 0 ? -Math.log10(netH / totalVol) : (netH < 0 ? 14 + Math.log10(Math.abs(netH) / totalVol) : 7.0);
+
+            const baseVolDisp = document.getElementById('g2BaseVolDisp');
+            if (baseVolDisp) baseVolDisp.innerText = g2_addedBase;
+            const phDisp = document.getElementById('g2PhDisp');
+            if (phDisp) phDisp.innerText = pH.toFixed(2);
+            
+            const liq = document.getElementById('g2Liquid');
+            if (liq) {
+                if (pH < 6.8) liq.style.backgroundColor = '#FCA5A5';
+                else if (pH > 7.2) liq.style.backgroundColor = '#93C5FD';
+                else {
+                    liq.style.backgroundColor = '#FEF08A';
+                    if (!g2_completed) { g2_completed = true; updateGameScore(100); if (typeof confetti === 'function') confetti({ particleCount: 80 }); }
+                }
+            }
+        }
+
+        // GAME 3: المحققة الكيميائية
+        let g3_clues = { ph: false, cond: false, ion: false };
+        function renderGame3_ChemicalDetective(container) {
+            g3_clues = { ph: false, cond: false, ion: false };
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-pink-50 p-3 rounded-xl border border-pink-200 text-xs text-pink-900 font-semibold">
+                        عزيزتي المحققة الكيميائية! اجمعي الأدلة الثلاثة لاكتشاف المادة المجهولة.
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="g3_reveal('ph')" class="p-2 bg-white border rounded-xl text-xs font-bold">اختبار pH</button>
+                        <button onclick="g3_reveal('cond')" class="p-2 bg-white border rounded-xl text-xs font-bold">اختبار التوصيل</button>
+                        <button onclick="g3_reveal('ion')" class="p-2 bg-white border rounded-xl text-xs font-bold">اختبار التأين</button>
+                    </div>
+                    <div id="g3EvidenceBoard" class="bg-slate-50 p-3 rounded-xl border text-xs space-y-1"><div class="font-bold">لوحة الأدلة:</div><ul id="g3List" class="pr-4 list-disc text-slate-600"><li>اطلبي اختباراً للبدء.</li></ul></div>
+                    <div id="g3GuessSec" class="hidden space-y-2 pt-2 border-t">
+                        <div class="text-xs font-bold">ما هي هوية المادة الغامضة؟</div>
+                        <div class="flex gap-2">
+                            <button onclick="g3_guess(true)" class="flex-1 bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold">حمض قوي (HCl)</button>
+                            <button onclick="g3_guess(false)" class="flex-1 bg-rose-600 text-white py-2 rounded-xl text-xs font-bold">قاعدة قوية (NaOH)</button>
+                        </div>
+                    </div>
+                    <div id="g3Result" class="text-xs font-bold text-center"></div>
+                </div>
+            `;
+        }
+
+        function g3_reveal(t) {
+            g3_clues[t] = true;
+            const l = document.getElementById('g3List');
+            if (l) {
+                if (l.innerHTML.includes('اطلبي')) l.innerHTML = '';
+                if (t === 'ph') l.innerHTML += `<li>قيمة pH تساوي 1.1 (وسط حمضي شديد).</li>`;
+                if (t === 'cond') l.innerHTML += `<li>توصيل كهربائي عالي وتوهج شديد للمصباح.</li>`;
+                if (t === 'ion') l.innerHTML += `<li>تأين تام بنسبة 100% في المحلول.</li>`;
+            }
+
+            if (g3_clues.ph && g3_clues.cond && g3_clues.ion) {
+                const guessSec = document.getElementById('g3GuessSec');
+                if (guessSec) guessSec.classList.remove('hidden');
+            }
+        }
+
+        function g3_guess(correct) {
+            const r = document.getElementById('g3Result');
+            if (r) {
+                if (correct) { updateGameScore(100); r.innerHTML = `<span class="text-emerald-700">✨ أحسنتِ أيتها المحققة الكيميائية! الاستنتاج صحيح.</span>`; }
+                else { r.innerHTML = `<span class="text-rose-700">استنتاج غير صحيح، راجعي الأدلة.</span>`; }
+            }
+        }
+
+        // GAME 4: تحدي مقياس الرقم الهيدروجيني
+        let g4_items = [
+            { name: 'عصير ليمون', ph: 2.3, z: 'acid' },
+            { name: 'ماء نقي', ph: 7.0, z: 'neutral' },
+            { name: 'مبيض ملابس', ph: 12.5, z: 'base' },
+            { name: 'حليب المغنيسيا', ph: 10.5, z: 'base' },
+            { name: 'مشروب غازي', ph: 3.0, z: 'acid' }
+        ];
+        let g4_idx = 0;
+        function renderGame4_PhScaleChallenge(container) { g4_idx = 0; g4_step(container); }
+        function g4_step(container) {
+            if (g4_idx >= g4_items.length) {
+                container.innerHTML = `<div class="text-center font-bold py-6 space-y-2"><div class="text-2xl text-amber-500"><i class="fa-solid fa-trophy"></i></div><div class="text-sm">🏆 أتممتِ تحدي مقياس الرقم الهيدروجيني بنجاح!</div></div>`; return;
+            }
+            let item = g4_items[g4_idx];
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-indigo-50 p-3 rounded-xl border text-xs text-indigo-900 font-semibold">صنّفي المادة التالية على مقياس pH (0-14):</div>
+                    <div class="bg-white p-4 rounded-2xl border text-center space-y-2">
+                        <div class="text-lg font-black">${item.name}</div>
+                        <div class="text-xs text-slate-500">pH = <span class="ph-number text-base">${item.ph}</span></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2">
+                            <button onclick="g4_ans('acid')" class="py-2.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-xl text-xs font-bold border border-red-200">حمضي (0-6)</button>
+                            <button onclick="g4_ans('neutral')" class="py-2.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-xl text-xs font-bold border border-yellow-200">متعادل (7)</button>
+                            <button onclick="g4_ans('base')" class="py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl text-xs font-bold border border-blue-200">قاعدي (8-14)</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        function g4_ans(z) {
+            if (z === g4_items[g4_idx].z) updateGameScore(20);
+            g4_idx++; 
+            const dynamicArea = document.getElementById('gameplayDynamicArea');
+            if (dynamicArea) g4_step(dynamicArea);
+        }
+
+        // GAME 5: سر الأيونات
+        let g5_cases = [
+            { h: '1.0 × 10⁻² M', oh: '1.0 × 10⁻¹² M', ans: 'acid' },
+            { h: '1.0 × 10⁻⁷ M', oh: '1.0 × 10⁻⁷ M', ans: 'neutral' },
+            { h: '1.0 × 10⁻¹¹ M', oh: '1.0 × 10⁻³ M', ans: 'base' }
+        ];
+        let g5_i = 0;
+        function renderGame5_IonsSecret(container) { g5_i = 0; g5_step(container); }
+        function g5_step(container) {
+            if (g5_i >= g5_cases.length) { container.innerHTML = `<div class="text-center font-bold py-6 space-y-2"><div class="text-2xl text-teal-500"><i class="fa-solid fa-atom"></i></div><div class="text-sm">⚛️ أتممتِ تحدي سر الأيونات بنجاح!</div></div>`; return; }
+            let c = g5_cases[g5_i];
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-teal-50 p-3 rounded-xl border text-xs text-teal-900 font-semibold">قارني بين تراكيز الأيونات وحددي طبيعة المحلول:</div>
+                    <div class="bg-white p-4 rounded-2xl border text-center space-y-3">
+                        <div class="flex flex-col sm:flex-row items-center justify-around gap-2 font-mono text-xs font-bold bg-slate-50 p-2 rounded-xl">
+                            <span class="text-rose-600">[H⁺] = ${c.h}</span>
+                            <span class="text-blue-600">[OH⁻] = ${c.oh}</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button onclick="g5_ans('acid')" class="py-2.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-xl text-xs font-bold border border-red-200">حمضي</button>
+                            <button onclick="g5_ans('neutral')" class="py-2.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-xl text-xs font-bold border border-yellow-200">متعادل</button>
+                            <button onclick="g5_ans('base')" class="py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl text-xs font-bold border border-blue-200">قاعدي</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        function g5_ans(ans) {
+            if (ans === g5_cases[g5_i].ans) updateGameScore(33.33);
+            g5_i++; 
+            const dynamicArea = document.getElementById('gameplayDynamicArea');
+            if (dynamicArea) g5_step(dynamicArea);
+        }
+
+        // GAME 6: تحدي مختبر الأيونات (Ion Laboratory Challenge)
+        let g6_tasks = [
+            { q: "ما هي شحنة أيون الهيدروكسيد الناتج عن تفكك القواعد القوية والضعيفة؟", opts: ["OH⁻", "H⁺", "Na⁺", "Cl⁻"], ans: 0, exp: "أيون الهيدروكسيد يحمل شحنة سالبة أحادية OH⁻." },
+            { q: "عند ذوبان HCl في الماء، أي المركبات التالية تمثل نواتج التأين الصحيحة؟", opts: ["H⁺ + Cl⁻", "Na⁺ + OH⁻", "H₂ + Cl₂", "H₂O + Cl⁻"], ans: 0, exp: "يتأين حمض HCl كلياً لإعطاء أيونات الهيدروجين H⁺ وأيونات الكلوريد Cl⁻." },
+            { q: "ما رمز ثابت تأين الماء عند درجة 25°C؟", opts: ["Kw", "Ka", "Kb", "Ksp"], ans: 0, exp: "Kw هو ثابت التأين الذاتي للماء ورقمياً يساوي 1.0 × 10⁻¹⁴." }
+        ];
+        let g6_idx = 0;
+        function renderGame6_IonLabChallenge(container) { g6_idx = 0; g6_step(container); }
+        function g6_step(container) {
+            if (g6_idx >= g6_tasks.length) {
+                container.innerHTML = `<div class="text-center font-bold py-6 space-y-2"><div class="text-2xl text-amber-500"><i class="fa-solid fa-vial-circle-check"></i></div><div class="text-sm">🧪 أتممتِ تحدي مختبر الأيونات بنجاح!</div></div>`; return;
+            }
+            let task = g6_tasks[g6_idx];
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-amber-50 p-3 rounded-xl border text-xs text-amber-900 font-semibold">تحدي الجسيمات والتفكك الأيوني (${g6_idx + 1} / ${g6_tasks.length}):</div>
+                    <div class="bg-white p-4 rounded-2xl border text-center space-y-3">
+                        <div class="text-xs font-bold text-slate-800">${task.q}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${task.opts.map((o, idx) => `<button onclick="g6_ans(${idx})" class="py-2.5 bg-slate-50 border hover:bg-amber-50 rounded-xl text-xs font-mono font-bold transition">${o}</button>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        function g6_ans(idx) {
+            if (idx === g6_tasks[g6_idx].ans) updateGameScore(33.33);
+            g6_idx++; 
+            const dynamicArea = document.getElementById('gameplayDynamicArea');
+            if (dynamicArea) g6_step(dynamicArea);
+        }
+
+        // NAVIGATION TAB SWITCHER
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = 'tab-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 hover:bg-slate-100 text-slate-600 shrink-0');
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) targetTab.classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tab);
+            if (activeBtn) activeBtn.className = 'tab-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-sky-100 text-slate-900 shadow-sm shrink-0';
+        }
+    </script>
+</body>
+</html>
